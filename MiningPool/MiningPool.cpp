@@ -8,12 +8,16 @@
 
 #include "SocketServer.h"
 #include "Payout.h"
+#include "Database.h"
 
 
 using namespace std;
 
 int main()
 {
+
+    if (!Database::databaseExists())
+        Database::createDatabase();
 
     SocketServer *socketServer = new SocketServer();
     thread socketThread(&SocketServer::clientListener, socketServer);
