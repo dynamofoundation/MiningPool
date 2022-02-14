@@ -139,7 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Payout.cpp" />
+    <ClCompile Include="SocketServer.cpp" />
+    <ClCompile Include="Database.cpp" />
     <ClCompile Include="MiningPool.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Payout.h" />
+    <ClInclude Include="SocketServer.h" />
+    <ClInclude Include="Database.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
