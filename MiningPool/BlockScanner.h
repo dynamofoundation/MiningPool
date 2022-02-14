@@ -11,6 +11,10 @@ using namespace std;
 class BlockScanner
 {
 public:
+	mutex lockJob;
+
 	void scan(Global* global, RPC* rpc);
+	
+
 };
 

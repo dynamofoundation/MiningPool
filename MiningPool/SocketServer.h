@@ -4,6 +4,7 @@
 
 #include "Settings.h"
 #include "WorkerThread.h"
+#include "Global.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -13,6 +14,6 @@
 class SocketServer
 {
 public:
-	void clientListener( Settings *settings );
+	void clientListener( Global *global );
 };
 

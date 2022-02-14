@@ -42,7 +42,7 @@ int main()
     scannerThread.detach();
 
     SocketServer *socketServer = new SocketServer();
-    thread socketThread(&SocketServer::clientListener, socketServer, global->settings);
+    thread socketThread(&SocketServer::clientListener, socketServer, global);
     socketThread.detach();
 
     Payout* payout = new Payout();

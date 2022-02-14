@@ -21,11 +21,14 @@ bool readLine(vector<char>& buffer, string& line) {
 
 
 
-void WorkerThread::blockUpdateThread(int clientSocket) {
+void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
 
 	while (!socketError) {
 		if (authDone) {
-
+			if (lastBlockHeightSent != global->currentBlockHeight) {
+				sendCurrentBlock(clientSocket, global);
+				lastBlockHeightSent = global->currentBlockHeight;
+			}
 		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -35,7 +38,7 @@ void WorkerThread::blockUpdateThread(int clientSocket) {
 
 
 
-void WorkerThread::clientWorker(int clientSocket) {
+void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 	vector<char> buffer;
 	string wallet = "";
@@ -43,9 +46,10 @@ void WorkerThread::clientWorker(int clientSocket) {
 	difficulty = 1;
 	lastBlockHeightSent = -1;
 
-	thread blockUpdate(&WorkerThread::blockUpdateThread, this, clientSocket);
+	thread blockUpdate(&WorkerThread::blockUpdateThread, this, clientSocket, global);
 	blockUpdate.detach();
 
+	extraNonce = global->getExtraNonce();
 
 	socketError = false;
 	while (!socketError) {
@@ -75,6 +79,8 @@ void WorkerThread::clientWorker(int clientSocket) {
 				if (command == "auth") {
 					wallet = msg["data"];
 					authDone = true;
+					sendDifficulty();
+					sendCurrentBlock(clientSocket, global);
 				}
 
 				else if (command == "submit") {
@@ -89,4 +95,25 @@ void WorkerThread::clientWorker(int clientSocket) {
 }
 
 
+void WorkerThread::sendDifficulty() {
+	json diff;
+	diff["command"] = "set_difficulty";
+	diff["data"] = difficulty;
+}
 
+void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
+	global->lockBlockData.lock();	
+	string data = global->currentBlock.dump();
+	global->lockBlockData.unlock();
+
+	int len = data.length();
+	int sent = 0;
+	while ((sent < len) && (!socketError)) {
+		int numSent = send(clientSocket, data.c_str() + sent, len, 0);
+		if (numSent <= 0)
+			socketError = true;
+		else
+			sent += numSent;
+	}
+
+}

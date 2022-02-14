@@ -7,8 +7,18 @@ void BlockScanner::scan(Global* global, RPC* rpc) {
 	while (true) {
 
 		json jResult = rpc->execRPC("{ \"id\": 0, \"method\" : \"getblockcount\" }", global->settings);
-		global->currentBlockHeight = jResult["result"];
+		int blockHeight = jResult["result"];
+		if (blockHeight != global->currentBlockHeight) {
+			jResult = rpc->execRPC("{ \"id\": 0, \"method\" : \"getblocktemplate\", \"params\" : [{ \"rules\": [\"segwit\"] }] }", global->settings);
+			global->lockBlockData.lock();
+			json block;
+			block["command"] = "block_data";
+			block["data"] = jResult;
+			global->currentBlock = block;
+			global->lockBlockData.unlock();
+		}
 
 		this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
+

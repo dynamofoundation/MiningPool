@@ -1,9 +1,9 @@
 #include "SocketServer.h"
 
 
-void SocketServer::clientListener( Settings *settings ) {
+void SocketServer::clientListener( Global *global ) {
 
-	Log::log ("Starting socket server on port %d.\n", settings->clientListenPort);
+	Log::log ("Starting socket server on port %d.\n", global->settings->clientListenPort);
 
 	int serverSocket;
 
@@ -17,7 +17,7 @@ void SocketServer::clientListener( Settings *settings ) {
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(settings->clientListenPort);
+    address.sin_port = htons(global->settings->clientListenPort);
 
     if (::bind(serverSocket, (struct sockaddr*)&address, sizeof(address)) < 0)
         Log::fatalError("Failed to bind socket.");
@@ -34,7 +34,7 @@ void SocketServer::clientListener( Settings *settings ) {
         if (newClientSocket = accept(serverSocket, (struct sockaddr*)&address,  &addrlen) > 0)
         {
             WorkerThread* worker = new WorkerThread();
-            thread workerthread(&WorkerThread::clientWorker, worker, newClientSocket);
+            thread workerthread(&WorkerThread::clientWorker, worker, newClientSocket, global);
             workerthread.detach();
 
         }
