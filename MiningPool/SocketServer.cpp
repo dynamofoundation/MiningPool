@@ -12,7 +12,7 @@ void SocketServer::clientListener( Settings *settings ) {
     int addrlen = sizeof(address);
 
     // Creating socket file descriptor
-    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         Log::fatalError("Cannot create listen socket.");
 
     address.sin_family = AF_INET;
@@ -31,7 +31,7 @@ void SocketServer::clientListener( Settings *settings ) {
 	while (true) {
 
         int newClientSocket;
-        if ((newClientSocket = accept(serverSocket, (struct sockaddr*)&address,  (socklen_t*)&addrlen)) > 0)
+        if (newClientSocket = accept(serverSocket, (struct sockaddr*)&address,  &addrlen) > 0)
         {
             WorkerThread* worker = new WorkerThread();
             thread workerthread(&WorkerThread::clientWorker, worker, newClientSocket);

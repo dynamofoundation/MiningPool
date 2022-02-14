@@ -17,8 +17,7 @@ public:
 
 	int clientListenPort;
 
-	string rpcServer;
-	int rpcPort;
+	string rpcURL;
 	string rpcUser;
 	string rpcPassword;
 

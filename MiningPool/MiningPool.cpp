@@ -13,31 +13,40 @@
 #include "SocketServer.h"
 #include "Payout.h"
 #include "Database.h"
-#include "Settings.h"
+#include "Global.h"
 #include "BlockScanner.h"
+#include "RPC.h"
 
 using namespace std;
 
 int main()
 {
 
-    Settings* settings = new Settings();
-    settings->readSettings();
+#ifdef _WIN32
+    WSADATA wsa;
+    int res = WSAStartup(MAKEWORD(2, 2), &wsa);
+    if (res != NO_ERROR) 
+        Log::fatalError("WSAStartup failed");
+#endif
 
+    RPC* rpc = new RPC();
+    rpc->init();
+
+    Global* global = new Global();
 
     if (!Database::databaseExists())
         Database::createDatabase();
 
     BlockScanner* scanner = new BlockScanner();
-    thread scannerThread(&BlockScanner::scan, scanner, settings);
+    thread scannerThread(&BlockScanner::scan, scanner, global, rpc);
     scannerThread.detach();
 
     SocketServer *socketServer = new SocketServer();
-    thread socketThread(&SocketServer::clientListener, socketServer, settings);
+    thread socketThread(&SocketServer::clientListener, socketServer, global->settings);
     socketThread.detach();
 
     Payout* payout = new Payout();
-    thread payoutThread(&Payout::payoutJob, payout, settings);
+    thread payoutThread(&Payout::payoutJob, payout, global->settings);
     payoutThread.detach();
 
 

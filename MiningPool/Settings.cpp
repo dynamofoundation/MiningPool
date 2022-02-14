@@ -14,8 +14,7 @@ void Settings::readSettings() {
 
 		clientListenPort = jSettings["clientListenPort"];
 
-		rpcServer = jSettings["rpcServer"];
-		rpcPort = jSettings["rpcPort"];
+		rpcURL = jSettings["rpcURL"];
 		rpcUser = jSettings["rpcUser"];
 		rpcPassword = jSettings["rpcPassword"];
 

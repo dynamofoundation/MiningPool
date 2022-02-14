@@ -114,7 +114,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -141,8 +141,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlockScanner.cpp" />
+    <ClCompile Include="Global.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Payout.cpp" />
+    <ClCompile Include="RPC.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SocketServer.cpp" />
     <ClCompile Include="Database.cpp" />
@@ -151,11 +153,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlockScanner.h" />
+    <ClInclude Include="Global.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Payout.h" />
+    <ClInclude Include="RPC.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SocketServer.h" />
     <ClInclude Include="Database.h" />
+    <ClInclude Include="struct.h" />
     <ClInclude Include="WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
