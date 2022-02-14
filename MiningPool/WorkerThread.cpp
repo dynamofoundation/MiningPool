@@ -19,18 +19,36 @@ bool readLine(vector<char>& buffer, string& line) {
 	return found;
 }
 
+
+
+void WorkerThread::blockUpdateThread(int clientSocket) {
+
+	while (!socketError) {
+		if (authDone) {
+
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
+
+}
+
+
+
 void WorkerThread::clientWorker(int clientSocket) {
 
-
-	//send difficulty
-	//
-
-
 	vector<char> buffer;
+	string wallet = "";
+
+	difficulty = 1;
+	lastBlockHeightSent = -1;
+
+	thread blockUpdate(&WorkerThread::blockUpdateThread, this, clientSocket);
+	blockUpdate.detach();
 
 
-	int error = false;
-	while (!error) {
+	socketError = false;
+	while (!socketError) {
 
 		const int tmpBuffLen = 4096;
 		char tmpBuff[tmpBuffLen];
@@ -43,7 +61,7 @@ void WorkerThread::clientWorker(int clientSocket) {
 
 		//TODO - evaluate memory leaks due to return
 		if (numRecv < 0) {
-			error = true;
+			socketError = true;
 			return;
 		}
 
@@ -52,6 +70,16 @@ void WorkerThread::clientWorker(int clientSocket) {
 			string line;
 			while (readLine(buffer, line)) {
 				json msg = json::parse(line.c_str());
+				const std::string& command = msg["command"];
+
+				if (command == "auth") {
+					wallet = msg["data"];
+					authDone = true;
+				}
+
+				else if (command == "submit") {
+
+				}
 			}
 		}
 

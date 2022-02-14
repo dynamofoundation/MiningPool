@@ -1,0 +1,18 @@
+All messages JSON encoded
+Single top level object with two embedded values
+	command - mining command
+	data - varadic data based on command
+
+commands:
+mining client to pool:
+
+pool to mining client:
+
+
+examples:
+
+
+{
+	"command" : "auth",
+	"data" : "dy1qzvx3yfrucqa2ntsw8e7dyzv6u6dl2c2wjvx5jy.xyzzy"
+}

@@ -36,6 +36,9 @@
     <ClCompile Include="WorkerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BlockScanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SocketServer.h">
@@ -56,8 +59,12 @@
     <ClInclude Include="WorkerThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BlockScanner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="settings.txt" />
+    <Text Include="grammar.txt" />
   </ItemGroup>
 </Project>

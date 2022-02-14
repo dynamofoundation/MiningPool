@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <thread>
+
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -17,7 +19,15 @@ using json = nlohmann::json;
 
 class WorkerThread
 {
+
+	int socketError;
+	int authDone;
+	int lastBlockHeightSent;
+	int difficulty;
+
 public:
 	void clientWorker(int clientSocket);
+	void blockUpdateThread(int clientSocket);
+
 };
 

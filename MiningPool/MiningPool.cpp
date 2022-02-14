@@ -5,6 +5,7 @@
 //drop connections with high reject
 //handle mining addresses with bad payout address
 //allow for addr.clientname format
+//watch for new blocks and push them as needed
 
 #include <thread>
 
@@ -13,6 +14,7 @@
 #include "Payout.h"
 #include "Database.h"
 #include "Settings.h"
+#include "BlockScanner.h"
 
 using namespace std;
 
@@ -25,6 +27,10 @@ int main()
 
     if (!Database::databaseExists())
         Database::createDatabase();
+
+    BlockScanner* scanner = new BlockScanner();
+    thread scannerThread(&BlockScanner::scan, scanner, settings);
+    scannerThread.detach();
 
     SocketServer *socketServer = new SocketServer();
     thread socketThread(&SocketServer::clientListener, socketServer, settings);

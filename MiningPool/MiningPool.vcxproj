@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlockScanner.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Payout.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlockScanner.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Payout.h" />
     <ClInclude Include="Settings.h" />
@@ -157,6 +159,7 @@
     <ClInclude Include="WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="grammar.txt" />
     <Text Include="settings.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
