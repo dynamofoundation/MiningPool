@@ -1,6 +1,13 @@
 #pragma once
 
 #include "Settings.h"
+#include "WorkerThread.h"
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 
 class SocketServer
 {
