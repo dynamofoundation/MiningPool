@@ -1,7 +1,10 @@
 #pragma once
+
+#include "Settings.h"
+
 class Payout
 {
 public:
-	void payoutJob();
+	void payoutJob( Settings * settings );
 };
 

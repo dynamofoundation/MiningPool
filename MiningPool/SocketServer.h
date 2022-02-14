@@ -1,7 +1,10 @@
 #pragma once
+
+#include "Settings.h"
+
 class SocketServer
 {
 public:
-	void clientListener();
+	void clientListener( Settings *settings );
 };
 

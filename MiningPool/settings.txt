@@ -1,0 +1,14 @@
+{
+	"clientListenPort" : 4567,
+
+	"rpcServer" : "127.0.0.1",
+	"rpcPort" : 6433,
+	"rpcUser" : "user",
+	"rpcPassword" : "123456",
+
+	"payoutWallet" : "dy1qzvx3yfrucqa2ntsw8e7dyzv6u6dl2c2wjvx5jy",
+	"miningFeePercent" : 3,
+	"payoutPeriod" : 1,
+	"minPayout" : 500000,
+	"payoutFee" : 10000
+}
