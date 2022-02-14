@@ -1,5 +1,6 @@
 #include "SocketServer.h"
 
+
 void SocketServer::clientListener( Settings *settings ) {
 
 	Log::log ("Starting socket server on port %d.\n", settings->clientListenPort);
@@ -32,6 +33,9 @@ void SocketServer::clientListener( Settings *settings ) {
         int newClientSocket;
         if ((newClientSocket = accept(serverSocket, (struct sockaddr*)&address,  (socklen_t*)&addrlen)) > 0)
         {
+            WorkerThread* worker = new WorkerThread();
+            thread workerthread(&WorkerThread::clientWorker, worker, newClientSocket);
+            workerthread.detach();
 
         }
 

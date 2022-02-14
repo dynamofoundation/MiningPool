@@ -1,7 +1,11 @@
 #pragma once
 
+#include <thread>
+
 #include "Settings.h"
 #include "WorkerThread.h"
+
+
 
 #ifdef _WIN32
 #include <winsock2.h>
