@@ -4,15 +4,50 @@ Single top level object with two embedded values
 	data - varadic data based on command
 
 commands:
-mining client to pool:
 
-pool to mining client:
-
-
-examples:
-
-
+====================================================
+auth - sent by mining client to pool to register wallet/worker name
+====================================================
 {
 	"command" : "auth",
 	"data" : "dy1qzvx3yfrucqa2ntsw8e7dyzv6u6dl2c2wjvx5jy.xyzzy"
+}
+
+
+
+====================================================
+set_difficulty - sent by pool to mining client to update difficulty
+====================================================
+{
+	"command" : "set_difficulty",
+	"data" : <new diff as int>
+}
+
+
+
+====================================================
+set_extranonce - sent by pool to mining client to notify of worker extranonce
+====================================================
+{
+	"command" : "set_mining_wallet",
+	"data" : <address of wallet to send coinbase to>
+}
+
+
+
+====================================================
+set_extranonce - send by pool to mining client to notify worker which wallet to pay coinbase to
+====================================================
+{
+	"command" : "set_extranonce",
+	"data" : <new nonce as int>
+}
+
+
+====================================================
+block_data - sent by pool to mining client to transmit new block template
+====================================================
+{
+	"command" : "block_data",
+	"data" : <json object of block template in standard bitcoin getblocktemplate format>
 }

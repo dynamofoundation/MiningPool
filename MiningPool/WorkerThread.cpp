@@ -40,6 +40,7 @@ void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
 
 void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
+	Log::log("New client connection");
 	vector<char> buffer;
 	string wallet = "";
 
@@ -65,6 +66,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 		//TODO - evaluate memory leaks due to return
 		if (numRecv < 0) {
+			uint32_t errorNum = GetLastError();
+			Log::log("Client thread %d exiting with error %d", extraNonce, errorNum);
 			socketError = true;
 			return;
 		}
@@ -79,12 +82,21 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 				if (command == "auth") {
 					wallet = msg["data"];
 					authDone = true;
-					sendDifficulty();
+					sendExtraNonce(clientSocket);
+					sendDifficulty(clientSocket);
+					sendMiningWallet(clientSocket, global->settings);
 					sendCurrentBlock(clientSocket, global);
 				}
 
 				else if (command == "submit") {
-
+					string data = msg["data"];
+					string hash = calcHash(data);
+					//calc hash
+					//check local diff
+					//check network diff
+					//check correct wallet in coinbase
+					//submit if valid
+					//send result
 				}
 			}
 		}
@@ -95,17 +107,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 }
 
 
-void WorkerThread::sendDifficulty() {
-	json diff;
-	diff["command"] = "set_difficulty";
-	diff["data"] = difficulty;
-}
-
-void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
-	global->lockBlockData.lock();	
-	string data = global->currentBlock.dump();
-	global->lockBlockData.unlock();
-
+void WorkerThread::sendString(int clientSocket, string data) {
+	data = data + "\n";
 	int len = data.length();
 	int sent = 0;
 	while ((sent < len) && (!socketError)) {
@@ -115,5 +118,361 @@ void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
 		else
 			sent += numSent;
 	}
+}
+
+void WorkerThread::sendDifficulty(int clientSocket) {
+	json msg;
+	msg["command"] = "set_difficulty";
+	msg["data"] = difficulty;
+	sendString(clientSocket, msg.dump());
+}
+
+void WorkerThread::sendExtraNonce(int clientSocket) {
+	json msg;
+	msg["command"] = "set_extranonce";
+	msg["data"] = extraNonce;
+	sendString(clientSocket, msg.dump());
+}
+
+void WorkerThread::sendMiningWallet(int clientSocket, Settings* settings) {
+	json msg;
+	msg["command"] = "set_mining_wallet";
+	msg["data"] = settings->miningWallet;
+	sendString(clientSocket, msg.dump());
+}
+
+void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
+	global->lockBlockData.lock();	
+	string blockData = global->currentBlock.dump();
+    lockProgram.lock();
+	string strProgram = global->currentBlock["data"]["program"];
+
+    bool programDone = false;    
+    std::stringstream stream(strProgram);
+    std::string line;
+
+    while (!programDone) {
+        getline(stream, line);
+        if (line.length() == 0)
+            programDone = true;
+        else {
+            vProgram.push_back(line);
+        }
+    }
+
+
+    lockProgram.unlock();
+	global->lockBlockData.unlock();
+
+	sendString(clientSocket, blockData);
+}
+
+
+
+
+string WorkerThread::calcHash(string data) {
+	string header = data.substr(0, 160);
+	unsigned char blockHeader[80];
+	hex2bin(blockHeader, header.c_str(), 80);
+
+	for (int i = 0; i < 16; i++) {
+		unsigned char swap = blockHeader[4 + i];
+        blockHeader[4 + i] = blockHeader[35 - i];
+        blockHeader[35 - i] = swap;
+	}
+
+    CSHA256 ctx;
+
+    uint32_t iResult[8];
+
+
+    char cPrevBlockHash[65];
+    bin2hex(cPrevBlockHash, &blockHeader[4], 32);
+
+    char cMerkleRoot[65];
+    bin2hex(cMerkleRoot, &blockHeader[36], 32);
+
+    string prevBlockHash(cPrevBlockHash);
+    string merkleRoot(cMerkleRoot);
+
+    /*
+    memset(blockHeader, 0, 80);
+    prevBlockHash = "0000000000000000000000000000000000000000000000000000000000000000";
+    merkleRoot = "0000000000000000000000000000000000000000000000000000000000000000";
+    */
+
+    ctx.Write(blockHeader, 80);
+    ctx.Finalize((unsigned char*)iResult);
+
+
+    int line_ptr = 0;       //program execution line pointer
+    int loop_counter = 0;   //counter for loop execution
+    unsigned int memory_size = 0;    //size of current memory pool
+    uint32_t* memPool = NULL;     //memory pool
+
+    int loop_line_ptr = 0;      //to mark return OPCODE for LOOP command
+    unsigned int loop_opcode_count = 0;  //number of times to run the LOOP
+
+    uint32_t temp[8];
+
+    uint32_t prevHashSHA[8];
+    uint32_t iPrevHash[8];
+    parseHex(prevBlockHash, (unsigned char*)iPrevHash);
+
+
+    ///////////////memset(iPrevHash, 0, 32);
+
+
+    ctx.Reset();
+    ctx.Write((unsigned char*)iPrevHash, 32);
+    ctx.Finalize((unsigned char*)prevHashSHA);
+
+    ////////////int c = 0;
+
+    lockProgram.lock();
+    vector<string> program = vProgram;
+    lockProgram.unlock();
+
+    while (line_ptr < program.size()) {
+        std::istringstream iss(program[line_ptr]);
+        std::vector<std::string> tokens{ std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{} };     //split line into tokens
+
+
+        /*
+        printf("%s\n", program[line_ptr].c_str());
+        printf("start %08X%08X%08X%08X%08X%08X%08X%08X\n",  iResult[0], iResult[1], iResult[2], iResult[3], iResult[4], iResult[5], iResult[6], iResult[7]);
+        */
+
+
+        //simple ADD and XOR functions with one constant argument
+        if (tokens[0] == "ADD") {
+            uint32_t arg1[8];
+            parseHex(tokens[1], (unsigned char*)arg1);
+            for (int i = 0; i < 8; i++)
+                iResult[i] += arg1[i];
+        }
+
+        else if (tokens[0] == "XOR") {
+            uint32_t arg1[8];
+            parseHex(tokens[1], (unsigned char*)arg1);
+            for (int i = 0; i < 8; i++)
+                iResult[i] ^= arg1[i];
+        }
+
+        //hash algo which can be optionally repeated several times
+        else if (tokens[0] == "SHA2") {
+            if (tokens.size() == 2) { //includes a loop count
+                loop_counter = atoi(tokens[1].c_str());
+                for (int i = 0; i < loop_counter; i++) {
+                    if (tokens[0] == "SHA2") {
+                        unsigned char output[32];
+                        ctx.Reset();
+                        ctx.Write((unsigned char*)iResult, 32);
+                        ctx.Finalize(output);
+                        memcpy(iResult, output, 32);
+                    }
+                }
+            }
+
+            else {                         //just a single run
+                if (tokens[0] == "SHA2") {
+                    unsigned char output[32];
+                    ctx.Reset();
+                    ctx.Write((unsigned char*)iResult, 32);
+                    ctx.Finalize(output);
+                    memcpy(iResult, output, 32);
+                }
+            }
+        }
+
+        //generate a block of memory based on a hashing algo
+        else if (tokens[0] == "MEMGEN") {
+            if (memPool != NULL)
+                free(memPool);
+            memory_size = atoi(tokens[2].c_str());
+            memPool = (uint32_t*)malloc(memory_size * 32);
+            for (int i = 0; i < memory_size; i++) {
+                if (tokens[1] == "SHA2") {
+                    unsigned char output[32];
+                    ctx.Reset();
+                    ctx.Write((unsigned char*)iResult, 32);
+                    ctx.Finalize(output);
+                    memcpy(iResult, output, 32);
+                    memcpy(memPool + i * 8, iResult, 32);
+                }
+            }
+        }
+
+        //add a constant to every value in the memory block
+        else if (tokens[0] == "MEMADD") {
+            if (memPool != NULL) {
+                uint32_t arg1[8];
+                parseHex(tokens[1], (unsigned char*)arg1);
+
+                for (int i = 0; i < memory_size; i++) {
+                    for (int j = 0; j < 8; j++)
+                        memPool[i * 8 + j] += arg1[j];
+                }
+            }
+        }
+
+        //add the sha of the prev block hash with every value in the memory block
+        else if (tokens[0] == "MEMADDHASHPREV") {
+            if (memPool != NULL) {
+                for (int i = 0; i < memory_size; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        memPool[i * 8 + j] += iResult[j];
+                        memPool[i * 8 + j] += prevHashSHA[j];
+                    }
+                }
+            }
+        }
+
+
+        //xor a constant with every value in the memory block
+        else if (tokens[0] == "MEMXOR") {
+            if (memPool != NULL) {
+                uint32_t arg1[8];
+                parseHex(tokens[1], (unsigned char*)arg1);
+
+                for (int i = 0; i < memory_size; i++) {
+                    for (int j = 0; j < 8; j++)
+                        memPool[i * 8 + j] ^= arg1[j];
+                }
+            }
+        }
+
+        //xor the sha of the prev block hash with every value in the memory block
+        else if (tokens[0] == "MEMXORHASHPREV") {
+            if (memPool != NULL) {
+
+                for (int i = 0; i < memory_size; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        memPool[i * 8 + j] += iResult[j];
+                        memPool[i * 8 + j] ^= prevHashSHA[j];
+                    }
+                }
+            }
+        }
+
+        //read a value based on an index into the generated block of memory
+        else if (tokens[0] == "READMEM") {
+            if (memPool != NULL) {
+                unsigned int index = 0;
+
+                if (tokens[1] == "MERKLE") {
+                    uint32_t arg1[8];
+                    parseHex(merkleRoot, (unsigned char*)arg1);
+                    index = arg1[0] % memory_size;
+                    memcpy(iResult, memPool + index * 8, 32);
+                }
+
+                else if (tokens[1] == "HASHPREV") {
+                    uint32_t arg1[8];
+                    parseHex(prevBlockHash, (unsigned char*)arg1);
+                    index = arg1[0] % memory_size;
+                    memcpy(iResult, memPool + index * 8, 32);
+                }
+            }
+        }
+
+        else if (tokens[0] == "READMEM2") {
+            if (memPool != NULL) {
+                unsigned int index = 0;
+
+                if (tokens[1] == "XOR") {
+                    if (tokens[2] == "HASHPREVSHA2") {
+                        for (int i = 0; i < 8; i++)
+                            iResult[i] ^= prevHashSHA[i];
+
+                        for (int i = 0; i < 8; i++)
+                            index += iResult[i];
+
+                        index = index % memory_size;
+                        memcpy(iResult, memPool + index * 8, 32);
+                    }
+                }
+
+                else if (tokens[1] == "ADD") {
+                    if (tokens[2] == "HASHPREVSHA2") {
+                        for (int i = 0; i < 8; i++)
+                            iResult[i] += prevHashSHA[i];
+
+                        for (int i = 0; i < 8; i++)
+                            index += iResult[i];
+
+                        index = index % memory_size;
+                        memcpy(iResult, memPool + index * 8, 32);
+                    }
+                }
+            }
+        }
+
+
+        else if (tokens[0] == "LOOP") {
+            loop_line_ptr = line_ptr;
+            loop_opcode_count = 0;
+            for (int i = 0; i < 8; i++)
+                loop_opcode_count += iResult[i];
+            loop_opcode_count = loop_opcode_count % atoi(tokens[1].c_str()) + 1;
+        }
+
+        else if (tokens[0] == "ENDLOOP") {
+            loop_opcode_count--;
+            if (loop_opcode_count > 0)
+                line_ptr = loop_line_ptr;
+        }
+
+        else if (tokens[0] == "IF") {
+            uint32_t sum = 0;
+            for (int i = 0; i < 8; i++)
+                sum += iResult[i];
+            if ((sum % atoi(tokens[1].c_str())) == 0)
+                line_ptr++;
+        }
+
+        else if (tokens[0] == "STORETEMP") {
+            for (int i = 0; i < 8; i++)
+                temp[i] = iResult[i];
+        }
+
+        else if (tokens[0] == "EXECOP") {
+            uint32_t sum = 0;
+            for (int i = 0; i < 8; i++)
+                sum += iResult[i];
+
+
+            if (sum % 3 == 0) {
+                for (int i = 0; i < 8; i++)
+                    iResult[i] += temp[i];
+            }
+            else if (sum % 3 == 1) {
+                for (int i = 0; i < 8; i++)
+                    iResult[i] ^= temp[i];
+            }
+            else if (sum % 3 == 2) {
+                unsigned char output[32];
+                ctx.Reset();
+                ctx.Write((unsigned char*)iResult, 32);
+                ctx.Finalize(output);
+                memcpy(iResult, output, 32);
+            }
+        }
+
+        line_ptr++;
+
+
+
+        ///printf("end   %08X%08X%08X%08X%08X%08X%08X%08X\n",  iResult[0], iResult[1], iResult[2], iResult[3], iResult[4], iResult[5], iResult[6], iResult[7] );
+
+
+
+    }
+
+
+    if (memPool != NULL)
+        free(memPool);
+
+    return makeHex((unsigned char*)iResult, 32);
 
 }

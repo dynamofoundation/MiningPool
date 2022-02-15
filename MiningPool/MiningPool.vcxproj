@@ -140,24 +140,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\DynMiner2\DynMiner2\cProgramVM.cpp" />
     <ClCompile Include="BlockScanner.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Payout.cpp" />
     <ClCompile Include="RPC.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="sha256.cpp" />
     <ClCompile Include="SocketServer.cpp" />
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="MiningPool.cpp" />
     <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\DynMiner2\DynMiner2\cProgramVM.h" />
     <ClInclude Include="BlockScanner.h" />
+    <ClInclude Include="common.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="hex.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Payout.h" />
     <ClInclude Include="RPC.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="sha256.h" />
     <ClInclude Include="SocketServer.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="struct.h" />

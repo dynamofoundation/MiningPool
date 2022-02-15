@@ -19,6 +19,7 @@ void Settings::readSettings() {
 		rpcPassword = jSettings["rpcPassword"];
 
 		payoutWallet = jSettings["payoutWallet"];
+		miningWallet = jSettings["miningWallet"];
 		miningFeePercent = jSettings["miningFeePercent"];
 		payoutPeriod = jSettings["payoutPeriod"];
 		minPayout = jSettings["minPayout"];

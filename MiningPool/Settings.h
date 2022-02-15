@@ -22,6 +22,7 @@ public:
 	string rpcPassword;
 
 	string payoutWallet;
+	string miningWallet;
 	int miningFeePercent;
 	int payoutPeriod;
 	int minPayout;

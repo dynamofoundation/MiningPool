@@ -1,6 +1,9 @@
 #include "BlockScanner.h"
 
 
+
+
+
 void BlockScanner::scan(Global* global, RPC* rpc) {
 	Log::log("Starting block scanner on RPC %s", global->settings->rpcURL.c_str());
 
@@ -9,13 +12,22 @@ void BlockScanner::scan(Global* global, RPC* rpc) {
 		json jResult = rpc->execRPC("{ \"id\": 0, \"method\" : \"getblockcount\" }", global->settings);
 		int blockHeight = jResult["result"];
 		if (blockHeight != global->currentBlockHeight) {
-			jResult = rpc->execRPC("{ \"id\": 0, \"method\" : \"getblocktemplate\", \"params\" : [{ \"rules\": [\"segwit\"] }] }", global->settings);
+			Log::log("Switching to block %d", blockHeight);
 			global->lockBlockData.lock();
+
+			jResult = rpc->execRPC("{ \"id\": 0, \"method\" : \"gethashfunction\", \"params\" : [] }", global->settings);
+			string strProgram = jResult["result"][0]["program"];
+
+			jResult = rpc->execRPC("{ \"id\": 0, \"method\" : \"getblocktemplate\", \"params\" : [{ \"rules\": [\"segwit\"] }] }", global->settings);
+			jResult["program"] = strProgram;
+
 			json block;
 			block["command"] = "block_data";
 			block["data"] = jResult;
+
 			global->currentBlock = block;
 			global->lockBlockData.unlock();
+			global->currentBlockHeight = blockHeight;
 		}
 
 		this_thread::sleep_for(std::chrono::milliseconds(100));

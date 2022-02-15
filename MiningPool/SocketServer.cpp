@@ -30,8 +30,8 @@ void SocketServer::clientListener( Global *global ) {
 
 	while (true) {
 
-        int newClientSocket;
-        if (newClientSocket = accept(serverSocket, (struct sockaddr*)&address,  &addrlen) > 0)
+        int newClientSocket = accept(serverSocket, (struct sockaddr*)&address, &addrlen);
+        if (newClientSocket > 0)
         {
             WorkerThread* worker = new WorkerThread();
             thread workerthread(&WorkerThread::clientWorker, worker, newClientSocket, global);

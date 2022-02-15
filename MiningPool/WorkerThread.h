@@ -4,7 +4,9 @@
 #include <vector>
 #include <string>
 #include <thread>
-
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -13,6 +15,8 @@
 #include "json.hpp"
 
 #include "Global.h"
+#include "hex.h"
+#include "sha256.h"
 
 using namespace std;
 
@@ -27,8 +31,15 @@ class WorkerThread
 	int difficulty;
 	int extraNonce;
 
-	void sendDifficulty();
+	mutex lockProgram;
+	vector<string> vProgram;
+
+	void sendDifficulty(int clientSocket);
+	void sendExtraNonce(int clientSocket);
+	void sendMiningWallet(int clientSocket, Settings* settings);
 	void sendCurrentBlock(int clientSocket, Global* global);
+	void sendString(int clientSocket, string data);
+	string calcHash(string data);
 
 public:
 	void clientWorker(int clientSocket, Global* global);

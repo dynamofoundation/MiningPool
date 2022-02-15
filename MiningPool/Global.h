@@ -22,7 +22,7 @@ public:
 	atomic<uint32_t> extraNonce;
 
 	mutex lockBlockData;
-	json currentBlock;
+	json currentBlock;	
 
 	uint32_t getExtraNonce();
 

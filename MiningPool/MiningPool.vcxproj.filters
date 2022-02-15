@@ -45,6 +45,12 @@
     <ClCompile Include="Global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sha256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DynMiner2\DynMiner2\cProgramVM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SocketServer.h">
@@ -75,6 +81,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sha256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DynMiner2\DynMiner2\cProgramVM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

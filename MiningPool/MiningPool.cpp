@@ -1,11 +1,12 @@
-//pass different extra nonce to each client
-//tcp port based
+//DONE  pass different extra nonce to each client  
+//DONE  tcp port based
 //adjust diff so block submission hits target
 //payout logic - frequency / minimum / fee
 //drop connections with high reject
 //handle mining addresses with bad payout address
 //allow for addr.clientname format
-//watch for new blocks and push them as needed
+//DONE  watch for new blocks and push them as needed
+//kill inactive client threads
 
 #include <thread>
 

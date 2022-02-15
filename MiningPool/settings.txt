@@ -6,7 +6,8 @@
 	"rpcPassword" : "123456",
 
 	"payoutWallet" : "dy1qzvx3yfrucqa2ntsw8e7dyzv6u6dl2c2wjvx5jy",
-	"miningFeePercent" : 3,
+	"miningWallet" : "dy1qpd28y8xxwv6ra80s3e9w5wmfhjgldayp576w8p",
+	"miningFeePercent" : 1,
 	"payoutPeriod" : 1,
 	"minPayout" : 500000,
 	"payoutFee" : 10000
