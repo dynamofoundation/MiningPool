@@ -11,15 +11,9 @@ void Payout::payoutJob( Global *global ) {
 	while (true) {
 		time_t now;
 		time(&now);
-		if(true) {
-		//if (now - lastPayout > global->settings->payoutPeriod) {
-			lastPayout = now;
 
-			//sum up shares
-			//get mining wallet balance
-			//calc and pay fee to pool op
-			//calc amts payable to each miner (+fee)
-			//send payments
+		if (now - lastPayout > global->settings->payoutPeriod) {
+			lastPayout = now;
 
 			this_thread::sleep_for(std::chrono::seconds(2));
 
