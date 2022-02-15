@@ -1,12 +1,13 @@
 //DONE  pass different extra nonce to each client  
 //DONE  tcp port based
-//adjust diff so block submission hits target
+//DONE adjust diff so block submission hits target of 3 blocks per min
 //payout logic - frequency / minimum / fee
 //drop connections with high reject
 //handle mining addresses with bad payout address
 //allow for addr.clientname format
 //DONE  watch for new blocks and push them as needed
 //kill inactive client threads
+
 
 #include <thread>
 
@@ -30,16 +31,13 @@ int main()
         Log::fatalError("WSAStartup failed");
 #endif
 
-    RPC* rpc = new RPC();
-    rpc->init();
-
     Global* global = new Global();
 
     if (!Database::databaseExists())
         Database::createDatabase();
 
     BlockScanner* scanner = new BlockScanner();
-    thread scannerThread(&BlockScanner::scan, scanner, global, rpc);
+    thread scannerThread(&BlockScanner::scan, scanner, global);
     scannerThread.detach();
 
     SocketServer *socketServer = new SocketServer();

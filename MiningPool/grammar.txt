@@ -51,3 +51,12 @@ block_data - sent by pool to mining client to transmit new block template
 	"command" : "block_data",
 	"data" : <json object of block template in standard bitcoin getblocktemplate format>
 }
+
+
+====================================================
+block_status - sent by pool to mining client to indicate block accept/reject status
+====================================================
+{
+	"command" : "block_status",
+	"data" : "accept" | "high-hash" | "duplicate"
+}

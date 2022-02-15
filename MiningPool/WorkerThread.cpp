@@ -23,12 +23,31 @@ bool readLine(vector<char>& buffer, string& line) {
 
 void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
 
+    time_t lastDiffCheck;
+    time(&lastDiffCheck);
+
 	while (!socketError) {
 		if (authDone) {
 			if (lastBlockHeightSent != global->currentBlockHeight) {
 				sendCurrentBlock(clientSocket, global);
 				lastBlockHeightSent = global->currentBlockHeight;
 			}
+
+            time_t now;
+            time(&now);
+            if (now - lastDiffCheck >= 20) {
+                lastDiffCheck = now;
+                if (submitShareCount > 1) {
+                    difficulty *= 2;
+                    sendDifficulty(clientSocket);
+                }
+                if (submitShareCount == 0) {
+                    difficulty = (difficulty * 3) / 4;
+                    sendDifficulty(clientSocket);
+                }
+                submitShareCount = 0;
+            }
+
 		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -36,6 +55,18 @@ void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
 
 }
 
+
+uint64_t BSWAP64(uint64_t x)
+{
+    return  ((x << 56) & 0xff00000000000000UL) |
+        ((x << 40) & 0x00ff000000000000UL) |
+        ((x << 24) & 0x0000ff0000000000UL) |
+        ((x << 8) & 0x000000ff00000000UL) |
+        ((x >> 8) & 0x00000000ff000000UL) |
+        ((x >> 24) & 0x0000000000ff0000UL) |
+        ((x >> 40) & 0x000000000000ff00UL) |
+        ((x >> 56) & 0x00000000000000ffUL);
+}
 
 
 void WorkerThread::clientWorker(int clientSocket, Global *global) {
@@ -91,9 +122,42 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 				else if (command == "submit") {
 					string data = msg["data"];
 					string hash = calcHash(data);
+
+                    uint64_t localTarget = share_to_target(difficulty) * 65536;
+
+                    unsigned char bHash[65];
+                    hex2bin(bHash, hash.c_str(), 32);
+                    uint64_t hash_int{};
+                    memcpy(&hash_int, bHash, 8);
+                    hash_int = htobe64(hash_int);
+                    if (hash_int < localTarget) {
+                        sendBlockStatus(clientSocket, global->settings, "accept");
+                        submitShareCount++;
+                        uint64_t networkTarget = BSWAP64(((uint64_t*)nativeTarget)[0]);
+                        if (hash_int < networkTarget) {
+                            json jResult = global->rpc->execRPC("{ \"id\": 0, \"method\" : \"submitblock\", \"params\" : [\"" + data + "\"] }", global->settings);
+
+                            if (jResult["error"].is_null()) {
+                                /*
+                                //printf(" **** SUBMITTED BLOCK SOLUTION FOR APPROVAL!!! ****\n");
+                                getWork->reqNewBlockFlag = true;
+                                statDisplay->totalStats->share_count++;
+                                if (jResult["result"] == "high-hash")
+                                    statDisplay->totalStats->rejected_share_count++;
+                                    */
+                            }
+                            else {
+                                //printf("Submit block failed: %s.\n", jResult["error"]);
+                                //statDisplay->totalStats->rejected_share_count++;
+                            }
+
+                        }
+                    }
+                    else {
+                        sendBlockStatus(clientSocket, global->settings, "high-hash");
+                    }
+
 					//calc hash
-					//check local diff
-					//check network diff
 					//check correct wallet in coinbase
 					//submit if valid
 					//send result
@@ -141,9 +205,18 @@ void WorkerThread::sendMiningWallet(int clientSocket, Settings* settings) {
 	sendString(clientSocket, msg.dump());
 }
 
+
+void WorkerThread::sendBlockStatus(int clientSocket, Settings* settings, string status) {
+    json msg;
+    msg["command"] = "block_status";
+    msg["data"] = status;
+    sendString(clientSocket, msg.dump());
+}
+
 void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
 	global->lockBlockData.lock();	
 	string blockData = global->currentBlock.dump();
+    memcpy(nativeTarget, global->nativeTarget, 32);
     lockProgram.lock();
 	string strProgram = global->currentBlock["data"]["program"];
 
@@ -151,6 +224,7 @@ void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
     std::stringstream stream(strProgram);
     std::string line;
 
+    vProgram.clear();
     while (!programDone) {
         getline(stream, line);
         if (line.length() == 0)
@@ -159,6 +233,7 @@ void WorkerThread::sendCurrentBlock(int clientSocket, Global* global) {
             vProgram.push_back(line);
         }
     }
+    vProgram.push_back("ENDPROGRAM");
 
 
     lockProgram.unlock();
@@ -185,6 +260,8 @@ string WorkerThread::calcHash(string data) {
 
     uint32_t iResult[8];
 
+
+    //hex2bin(blockHeader, "40000000000000023864150D435518426A0E938EA34A6D3483AC82F08EBD19DE9498B8B8B828786343EAE185A6DD8F807831494C30C58A6B1A0D4B45B5462E378A2BD235C63EEC619694051D00000000", 80); 
 
     char cPrevBlockHash[65];
     bin2hex(cPrevBlockHash, &blockHeader[4], 32);
@@ -238,10 +315,10 @@ string WorkerThread::calcHash(string data) {
         std::vector<std::string> tokens{ std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{} };     //split line into tokens
 
 
-        /*
-        printf("%s\n", program[line_ptr].c_str());
-        printf("start %08X%08X%08X%08X%08X%08X%08X%08X\n",  iResult[0], iResult[1], iResult[2], iResult[3], iResult[4], iResult[5], iResult[6], iResult[7]);
-        */
+        
+        //printf("%s\n", program[line_ptr].c_str());
+        //printf("%08X%08X%08X%08X%08X%08X%08X%08X\n",  iResult[0], iResult[1], iResult[2], iResult[3], iResult[4], iResult[5], iResult[6], iResult[7]);
+        
 
 
         //simple ADD and XOR functions with one constant argument
@@ -415,6 +492,7 @@ string WorkerThread::calcHash(string data) {
             for (int i = 0; i < 8; i++)
                 loop_opcode_count += iResult[i];
             loop_opcode_count = loop_opcode_count % atoi(tokens[1].c_str()) + 1;
+            //printf("loop %d\n", loop_opcode_count);
         }
 
         else if (tokens[0] == "ENDLOOP") {

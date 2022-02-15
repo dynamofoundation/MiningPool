@@ -17,6 +17,8 @@
 #include "Global.h"
 #include "hex.h"
 #include "sha256.h"
+#include "difficulty.h"
+#include "endian.h"
 
 using namespace std;
 
@@ -34,10 +36,16 @@ class WorkerThread
 	mutex lockProgram;
 	vector<string> vProgram;
 
+	unsigned char nativeTarget[32];
+
+	int submitShareCount;
+
 	void sendDifficulty(int clientSocket);
 	void sendExtraNonce(int clientSocket);
 	void sendMiningWallet(int clientSocket, Settings* settings);
 	void sendCurrentBlock(int clientSocket, Global* global);
+	void sendBlockStatus(int clientSocket, Settings* settings, string status);
+
 	void sendString(int clientSocket, string data);
 	string calcHash(string data);
 
