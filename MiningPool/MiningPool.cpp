@@ -1,13 +1,16 @@
-//DONE  pass different extra nonce to each client  
-//DONE  tcp port based
-//DONE adjust diff so block submission hits target of 3 blocks per min
 //payout logic - frequency / minimum / fee
 //drop connections with high reject
 //handle mining addresses with bad payout address
 //allow for addr.clientname format
-//DONE  watch for new blocks and push them as needed
 //kill inactive client threads
-
+//check correct pay to wallet in coinbase
+//log to console, file or database
+//DONE  pass different extra nonce to each client  
+//DONE  tcp port based
+//DONE  adjust diff so block submission hits target of 3 submits per min
+//DONE  watch for new blocks and push them as needed
+//DONE  dupe check only per client, not server wide
+//DONE  nonce2 per client connection
 
 #include <thread>
 
@@ -45,7 +48,7 @@ int main()
     socketThread.detach();
 
     Payout* payout = new Payout();
-    thread payoutThread(&Payout::payoutJob, payout, global->settings);
+    thread payoutThread(&Payout::payoutJob, payout, global);
     payoutThread.detach();
 
 

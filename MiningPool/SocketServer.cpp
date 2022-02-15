@@ -3,7 +3,7 @@
 
 void SocketServer::clientListener( Global *global ) {
 
-	Log::log ("Starting socket server on port %d.\n", global->settings->clientListenPort);
+	Log::log ("Starting socket server on port %d.", global->settings->clientListenPort);
 
 	int serverSocket;
 

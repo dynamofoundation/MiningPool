@@ -19,6 +19,7 @@
 #include "sha256.h"
 #include "difficulty.h"
 #include "endian.h"
+#include "Database.h"
 
 using namespace std;
 
@@ -35,6 +36,9 @@ class WorkerThread
 
 	mutex lockProgram;
 	vector<string> vProgram;
+
+	mutex lockNonceList;
+	vector<uint32_t> nonceList;
 
 	unsigned char nativeTarget[32];
 

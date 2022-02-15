@@ -20,12 +20,13 @@ public:
 	string rpcURL;
 	string rpcUser;
 	string rpcPassword;
+	string rpcWallet;
 
 	string payoutWallet;
 	string miningWallet;
-	int miningFeePercent;
+	uint64_t miningFeePercent;
 	int payoutPeriod;
-	int minPayout;
-	int payoutFee;
+	uint64_t minPayout;
+	uint64_t payoutFee;
 };
 

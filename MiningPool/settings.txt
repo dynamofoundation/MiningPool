@@ -4,6 +4,7 @@
 	"rpcURL" : "http://192.168.1.193:6433/",
 	"rpcUser" : "user",
 	"rpcPassword" : "123456",
+	"rpcWallet" : "mining",
 
 	"payoutWallet" : "dy1qzvx3yfrucqa2ntsw8e7dyzv6u6dl2c2wjvx5jy",
 	"miningWallet" : "dy1qpd28y8xxwv6ra80s3e9w5wmfhjgldayp576w8p",

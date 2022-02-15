@@ -31,6 +31,9 @@ void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
 			if (lastBlockHeightSent != global->currentBlockHeight) {
 				sendCurrentBlock(clientSocket, global);
 				lastBlockHeightSent = global->currentBlockHeight;
+                lockNonceList.lock();
+                nonceList.clear();
+                lockNonceList.unlock();
 			}
 
             time_t now;
@@ -43,6 +46,8 @@ void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
                 }
                 if (submitShareCount == 0) {
                     difficulty = (difficulty * 3) / 4;
+                    if (difficulty < 1)
+                        difficulty = 1;
                     sendDifficulty(clientSocket);
                 }
                 submitShareCount = 0;
@@ -121,46 +126,60 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 				else if (command == "submit") {
 					string data = msg["data"];
-					string hash = calcHash(data);
+                    uint32_t nonce;
+                    string strNonce = data.substr(76 * 2, 8);
+                    hex2bin((unsigned char*)&nonce, strNonce.c_str(), 4);
 
-                    uint64_t localTarget = share_to_target(difficulty) * 65536;
+                    lockNonceList.lock();
+                    vector<uint32_t>::iterator it;
+                    it = find(nonceList.begin(), nonceList.end(), nonce);
+                    if ((it == nonceList.end()) || (nonceList.size() == 0)) {
+                        nonceList.push_back(nonce);
+                        lockNonceList.unlock();
 
-                    unsigned char bHash[65];
-                    hex2bin(bHash, hash.c_str(), 32);
-                    uint64_t hash_int{};
-                    memcpy(&hash_int, bHash, 8);
-                    hash_int = htobe64(hash_int);
-                    if (hash_int < localTarget) {
-                        sendBlockStatus(clientSocket, global->settings, "accept");
-                        submitShareCount++;
-                        uint64_t networkTarget = BSWAP64(((uint64_t*)nativeTarget)[0]);
-                        if (hash_int < networkTarget) {
-                            json jResult = global->rpc->execRPC("{ \"id\": 0, \"method\" : \"submitblock\", \"params\" : [\"" + data + "\"] }", global->settings);
+                        string hash = calcHash(data);
 
-                            if (jResult["error"].is_null()) {
-                                /*
-                                //printf(" **** SUBMITTED BLOCK SOLUTION FOR APPROVAL!!! ****\n");
-                                getWork->reqNewBlockFlag = true;
-                                statDisplay->totalStats->share_count++;
-                                if (jResult["result"] == "high-hash")
-                                    statDisplay->totalStats->rejected_share_count++;
-                                    */
+                        uint64_t localTarget = share_to_target(difficulty) * 65536;
+
+                        unsigned char bHash[65];
+                        hex2bin(bHash, hash.c_str(), 32);
+                        uint64_t hash_int{};
+                        memcpy(&hash_int, bHash, 8);
+                        hash_int = htobe64(hash_int);
+
+                        if (hash_int < localTarget) {
+                            sendBlockStatus(clientSocket, global->settings, "accept");
+                            Database::addShare(wallet, hash);
+                            submitShareCount++;
+                            uint64_t networkTarget = BSWAP64(((uint64_t*)nativeTarget)[0]);
+                            if (hash_int < networkTarget) {
+                                json jResult = global->rpc->execRPC("{ \"id\": 0, \"method\" : \"submitblock\", \"params\" : [\"" + data + "\"] }", global->settings);
+
+                                if (jResult["error"].is_null()) {
+                                    /*
+                                    //printf(" **** SUBMITTED BLOCK SOLUTION FOR APPROVAL!!! ****\n");
+                                    getWork->reqNewBlockFlag = true;
+                                    statDisplay->totalStats->share_count++;
+                                    if (jResult["result"] == "high-hash")
+                                        statDisplay->totalStats->rejected_share_count++;
+                                        */
+                                }
+                                else {
+                                    //printf("Submit block failed: %s.\n", jResult["error"]);
+                                    //statDisplay->totalStats->rejected_share_count++;
+                                }
+
                             }
-                            else {
-                                //printf("Submit block failed: %s.\n", jResult["error"]);
-                                //statDisplay->totalStats->rejected_share_count++;
-                            }
-
+                        }
+                        else {
+                            sendBlockStatus(clientSocket, global->settings, "high-hash");
                         }
                     }
                     else {
-                        sendBlockStatus(clientSocket, global->settings, "high-hash");
+                        sendBlockStatus(clientSocket, global->settings, "duplicate");
+                        lockNonceList.unlock();
                     }
 
-					//calc hash
-					//check correct wallet in coinbase
-					//submit if valid
-					//send result
 				}
 			}
 		}

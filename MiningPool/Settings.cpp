@@ -17,6 +17,7 @@ void Settings::readSettings() {
 		rpcURL = jSettings["rpcURL"];
 		rpcUser = jSettings["rpcUser"];
 		rpcPassword = jSettings["rpcPassword"];
+		rpcWallet = jSettings["rpcWallet"];
 
 		payoutWallet = jSettings["payoutWallet"];
 		miningWallet = jSettings["miningWallet"];
