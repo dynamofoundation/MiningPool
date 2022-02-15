@@ -26,6 +26,8 @@ void Settings::readSettings() {
 		minPayout = jSettings["minPayout"];
 		payoutFee = jSettings["payoutFee"];
 
+		httpPort = jSettings["httpPort"];
+
 	}
 	else
 		Log::fatalError("Cannot open settings.txt");

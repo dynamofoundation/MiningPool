@@ -10,6 +10,8 @@
 	"miningWallet" : "dy1qpd28y8xxwv6ra80s3e9w5wmfhjgldayp576w8p",
 	"miningFeePercent" : 1,
 	"payoutPeriod" : 1,
-	"minPayout" : 500000,
-	"payoutFee" : 10000
+	"minPayout" : 50000000,
+	"payoutFee" : 10000,
+	
+	"httpPort" : 8086
 }

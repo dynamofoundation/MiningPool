@@ -5,6 +5,7 @@
 //kill inactive client threads
 //check correct pay to wallet in coinbase
 //log to console, file or database
+//load wallet on startup
 //DONE  pass different extra nonce to each client  
 //DONE  tcp port based
 //DONE  adjust diff so block submission hits target of 3 submits per min
@@ -21,6 +22,7 @@
 #include "Global.h"
 #include "BlockScanner.h"
 #include "RPC.h"
+#include "HTTPServer.h"
 
 using namespace std;
 
@@ -50,6 +52,10 @@ int main()
     Payout* payout = new Payout();
     thread payoutThread(&Payout::payoutJob, payout, global);
     payoutThread.detach();
+
+    HTTPServer* httpServer = new HTTPServer();
+    thread httpThread(&HTTPServer::clientListener, httpServer, global);
+    httpThread.detach();
 
 
     while (true) {

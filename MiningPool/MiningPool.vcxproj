@@ -140,9 +140,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\DynMiner2\DynMiner2\cProgramVM.cpp" />
     <ClCompile Include="BlockScanner.cpp" />
+    <ClCompile Include="cProgramVM.cpp" />
     <ClCompile Include="Global.cpp" />
+    <ClCompile Include="HTTPServer.cpp" />
+    <ClCompile Include="HTTPThread.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Payout.cpp" />
     <ClCompile Include="RPC.cpp" />
@@ -154,11 +156,13 @@
     <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\DynMiner2\DynMiner2\cProgramVM.h" />
     <ClInclude Include="BlockScanner.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="cProgramVM.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="hex.h" />
+    <ClInclude Include="HTTPServer.h" />
+    <ClInclude Include="HTTPThread.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Payout.h" />
     <ClInclude Include="RPC.h" />
