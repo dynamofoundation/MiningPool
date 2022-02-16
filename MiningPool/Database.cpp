@@ -71,7 +71,7 @@ void Database::addShare(string wallet, string hash, int difficulty) {
 		time_t now;
 		time(&now);
 
-		const char* sql = "insert into share ( share_wallet, share_hash, share_timestamp, share_processed) values (@wallet, @hash, @timestamp, @processed)";
+		const char* sql = "insert into share ( share_wallet, share_hash, share_timestamp, share_difficulty, share_processed) values (@wallet, @hash, @timestamp, @difficulty, @processed)";
 
 		sqlite3_stmt* stmt = NULL;
 		sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -79,7 +79,8 @@ void Database::addShare(string wallet, string hash, int difficulty) {
 		sqlite3_bind_text(stmt, 1, wallet.c_str(), -1, NULL);
 		sqlite3_bind_text(stmt, 2, hash.c_str(), -1, NULL);
 		sqlite3_bind_int64(stmt, 3, now);
-		sqlite3_bind_int64(stmt, 4, 0);
+		sqlite3_bind_int64(stmt, 4, difficulty);
+		sqlite3_bind_int64(stmt, 5, 0);
 
 		sqlite3_step(stmt);
 	
