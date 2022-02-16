@@ -67,6 +67,8 @@ void Database::addShare(string wallet, string hash, int difficulty) {
 
 	rc = sqlite3_open("pool.db", &db);
 
+	
+
 	if (rc == 0) {
 		time_t now;
 		time(&now);

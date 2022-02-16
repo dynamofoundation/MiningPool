@@ -1,24 +1,7 @@
 // handle mining addresses with bad payout address
 // kill inactive client threads
 // log to console, file or database
-//DONE  allow for addr.clientname format
-//DONE  payout logic - frequency / minimum / fee
-//DONE  pass different extra nonce to each client  
-//DONE  tcp port based
-//DONE  adjust diff so block submission hits target of 3 submits per min
-//DONE  watch for new blocks and push them as needed
-//DONE  dupe check only per client, not server wide
-//DONE  nonce2 per client connection
-// 
-//DONE  handle bad json everywhere
-//DONE  if no payout dont clear shares
-//DONE  fix issue with double division rounding
-//DONE  record diff of each share
-//DONE  payout based on sum of difficulties
-//DONE  allow multiple difficulties to avoid rejects on high hash cards
-//DONE  check correct pay to wallet in coinbase
-//DONE  drop connections with high reject
-//DONE  load wallet on startup
+
 
 #include <thread>
 

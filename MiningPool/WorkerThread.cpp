@@ -105,7 +105,7 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 
 		//TODO - evaluate memory leaks due to return
-		if (numRecv < 0) {
+		if (numRecv <= 0) {
 			uint32_t errorNum = GetLastError();
 			Log::log("Client thread %d exiting with error %d", extraNonce, errorNum);
 			socketError = true;
@@ -116,6 +116,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 		if (buffer.size() > 0) {
 			string line;
 			while (readLine(buffer, line)) {
+                Log::log("%d %s", extraNonce, line.c_str());
+
                 if (!json::accept(line))        //if its not json then just exit
                     return;
 				json msg = json::parse(line.c_str());
