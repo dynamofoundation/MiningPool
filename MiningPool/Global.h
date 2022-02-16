@@ -13,6 +13,7 @@ using namespace std;
 #include "Settings.h"
 #include "RPC.h"
 #include "Database.h"
+#include "sha256.h"
 
 class Global
 {
@@ -32,6 +33,9 @@ public:
 	std::string strNativeTarget;
 	uint32_t iNativeTarget[8];
 	unsigned char nativeTarget[32];
+
+	unsigned char pk_script[25] = { 0 };
+	int pk_script_size;
 
 
 	uint32_t getExtraNonce();

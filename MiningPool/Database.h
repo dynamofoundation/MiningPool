@@ -32,7 +32,7 @@ class Database
 public:
 	int databaseExists();
 	void createDatabase();
-	void addShare(string wallet, string hash);
+	void addShare(string wallet, string hash, int difficulty);
 	vector<sShareSummary> countShares(time_t cutoffTime);
 	void updateSharesProcessed(time_t cutoffTime);
 	void savePayout(string address, uint64_t amount);

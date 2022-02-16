@@ -15,5 +15,6 @@ class Payout
 public:
 	void payoutJob( Global *global );
 	void sendMoney(string address, uint64_t amount, Global *global);
+	string convertAtomToDecimal(uint64_t amount);
 };
 

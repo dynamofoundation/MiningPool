@@ -32,7 +32,10 @@ class WorkerThread
 	int authDone;
 	int lastBlockHeightSent;
 	int difficulty;
+	int previousDifficulty;
 	int extraNonce;
+
+	int rejectCount;
 
 	mutex lockProgram;
 	vector<string> vProgram;

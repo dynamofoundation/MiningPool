@@ -38,13 +38,15 @@ void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
 
             time_t now;
             time(&now);
-            if (now - lastDiffCheck >= 20) {
+            if (now - lastDiffCheck >= 30) {
                 lastDiffCheck = now;
-                if (submitShareCount > 1) {
+                if (submitShareCount > 2) {
+                    previousDifficulty = difficulty;
                     difficulty *= 2;
                     sendDifficulty(clientSocket);
                 }
                 if (submitShareCount == 0) {
+                    previousDifficulty = difficulty;
                     difficulty = (difficulty * 3) / 4;
                     if (difficulty < 1)
                         difficulty = 1;
@@ -81,7 +83,9 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 	string wallet = "";
 
 	difficulty = 1;
+    previousDifficulty = 1;
 	lastBlockHeightSent = -1;
+    rejectCount = 0;
 
 	thread blockUpdate(&WorkerThread::blockUpdateThread, this, clientSocket, global);
 	blockUpdate.detach();
@@ -112,6 +116,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 		if (buffer.size() > 0) {
 			string line;
 			while (readLine(buffer, line)) {
+                if (!json::accept(line))        //if its not json then just exit
+                    return;
 				json msg = json::parse(line.c_str());
 				const std::string& command = msg["command"];
 
@@ -126,6 +132,14 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 				else if (command == "submit") {
 					string data = msg["data"];
+
+                    //check that miner is sending coinbase to mining wallet
+                    //if not, abort connection
+                    unsigned char scriptVerify[256];
+                    hex2bin(scriptVerify, data.substr(290, global->pk_script_size * 2).c_str(), global->pk_script_size);
+                    if (memcmp(scriptVerify, global->pk_script, global->pk_script_size) != 0)
+                        return;
+
                     uint32_t nonce;
                     string strNonce = data.substr(76 * 2, 8);
                     hex2bin((unsigned char*)&nonce, strNonce.c_str(), 4);
@@ -139,7 +153,12 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
                         string hash = calcHash(data);
 
-                        uint64_t localTarget = share_to_target(difficulty) * 65536;
+
+                        uint64_t localTarget;
+                        if (previousDifficulty < difficulty)
+                            localTarget = share_to_target(previousDifficulty) * 65536;
+                        else
+                            localTarget = share_to_target(difficulty) * 65536;
 
                         unsigned char bHash[65];
                         hex2bin(bHash, hash.c_str(), 32);
@@ -149,30 +168,28 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
                         if (hash_int < localTarget) {
                             sendBlockStatus(clientSocket, global->settings, "accept");
-                            global->db->addShare(wallet, hash);
+                            global->db->addShare(wallet, hash, difficulty);
                             submitShareCount++;
                             uint64_t networkTarget = BSWAP64(((uint64_t*)nativeTarget)[0]);
                             if (hash_int < networkTarget) {
                                 json jResult = global->rpc->execRPC("{ \"id\": 0, \"method\" : \"submitblock\", \"params\" : [\"" + data + "\"] }", global->settings);
 
                                 if (jResult["error"].is_null()) {
-                                    /*
-                                    //printf(" **** SUBMITTED BLOCK SOLUTION FOR APPROVAL!!! ****\n");
-                                    getWork->reqNewBlockFlag = true;
-                                    statDisplay->totalStats->share_count++;
+                                    Log::log("Submitted share to network %s", hash.c_str());
                                     if (jResult["result"] == "high-hash")
-                                        statDisplay->totalStats->rejected_share_count++;
-                                        */
+                                        Log::log("ERROR: high-hash share submitted to network");
                                 }
                                 else {
-                                    //printf("Submit block failed: %s.\n", jResult["error"]);
-                                    //statDisplay->totalStats->rejected_share_count++;
+                                    Log::log("Submit block failed: %s", jResult["error"], hash.c_str());
                                 }
 
                             }
                         }
                         else {
                             sendBlockStatus(clientSocket, global->settings, "high-hash");
+                            rejectCount++;
+                            if (rejectCount > 100)
+                                return;
                         }
                     }
                     else {

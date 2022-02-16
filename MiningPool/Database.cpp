@@ -23,6 +23,7 @@ void Database::createDatabase() {
 		const char *sql_share = "create table share (  "  \
 			"share_wallet text not null, "  \
 			"share_hash text not null, "  \
+			"share_difficulty int not null, " \
 			"share_timestamp int not null, " \
 			"share_processed int not null ); "  \
 			;
@@ -57,7 +58,7 @@ void Database::createDatabase() {
 }
 
 
-void Database::addShare(string wallet, string hash) {
+void Database::addShare(string wallet, string hash, int difficulty) {
 
 	dbLock.lock();
 
@@ -111,7 +112,7 @@ vector<sShareSummary> Database::countShares(time_t cutoffTime) {
 		time_t now;
 		time(&now);
 
-		const char* sql = "select substr(share_wallet,1,42), count(1) from share where share_timestamp <= @endTime and share_processed = 0 group by substr(share_wallet,1,42);";
+		const char* sql = "select substr(share_wallet,1,42), sum(share_difficulty) from share where share_timestamp <= @endTime and share_processed = 0 group by substr(share_wallet,1,42);";
 
 		sqlite3_stmt* stmt = NULL;
 		sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
