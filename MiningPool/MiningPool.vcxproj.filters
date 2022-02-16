@@ -109,7 +109,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="settings.txt" />
+    <Text Include="settings-example.txt" />
     <Text Include="grammar.txt" />
   </ItemGroup>
 </Project>
