@@ -92,6 +92,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 	extraNonce = global->getExtraNonce();
 
+    Log::log("extranonce: %d   socket: %d\n", extraNonce, clientSocket);
+
 	socketError = false;
 	while (!socketError) {
 
@@ -116,7 +118,7 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 		if (buffer.size() > 0) {
 			string line;
 			while (readLine(buffer, line)) {
-                Log::log("%d %s", extraNonce, line.c_str());
+                Log::log("Recv  %d %s", extraNonce, line.c_str());
 
                 if (!json::accept(line))        //if its not json then just exit
                     return;
@@ -214,6 +216,9 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 
 void WorkerThread::sendString(int clientSocket, string data) {
+    Log::log("Send  %d %s", extraNonce, data.c_str());
+
+
 	data = data + "\n";
 	int len = data.length();
 	int sent = 0;
