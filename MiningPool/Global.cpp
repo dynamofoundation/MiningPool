@@ -7,6 +7,8 @@ Global::Global() {
 	rpc = new RPC();
 	rpc->init();
 
+	db = new Database();
+
 	currentBlockHeight = -1;
 }
 

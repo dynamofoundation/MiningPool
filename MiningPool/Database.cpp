@@ -59,6 +59,8 @@ void Database::createDatabase() {
 
 void Database::addShare(string wallet, string hash) {
 
+	dbLock.lock();
+
 	sqlite3* db;
 	int rc;
 
@@ -89,11 +91,15 @@ void Database::addShare(string wallet, string hash) {
 
 	sqlite3_close(db);
 
+	dbLock.unlock();
+
 }
 
 
 vector<sShareSummary> Database::countShares(time_t cutoffTime) {
 
+	dbLock.lock();
+		
 	sqlite3* db;
 	int rc;
 
@@ -127,6 +133,8 @@ vector<sShareSummary> Database::countShares(time_t cutoffTime) {
 
 	sqlite3_close(db);
 
+	dbLock.unlock();
+
 	return result;
 
 }
@@ -135,6 +143,8 @@ vector<sShareSummary> Database::countShares(time_t cutoffTime) {
 void Database::updateSharesProcessed(time_t cutoffTime) {
 	sqlite3* db;
 	int rc;
+
+	dbLock.lock();
 
 	rc = sqlite3_open("pool.db", &db);
 
@@ -159,6 +169,7 @@ void Database::updateSharesProcessed(time_t cutoffTime) {
 		Log::fatalError(sqlite3_errmsg(db));
 
 	sqlite3_close(db);
+	dbLock.unlock();
 	
 }
 
@@ -167,6 +178,7 @@ void Database::savePayout(string address, uint64_t amount) {
 	sqlite3* db;
 	int rc;
 
+	dbLock.lock();
 	rc = sqlite3_open("pool.db", &db);
 
 	if (rc == 0) {
@@ -192,6 +204,8 @@ void Database::savePayout(string address, uint64_t amount) {
 		Log::fatalError(sqlite3_errmsg(db));
 
 	sqlite3_close(db);
+	dbLock.unlock();
+
 }
 
 
@@ -216,6 +230,7 @@ void Database::savePendingPayout(string address, uint64_t amount) {
 	sqlite3* db;
 	int rc;
 
+	dbLock.lock();
 	rc = sqlite3_open("pool.db", &db);
 
 	if (rc == 0) {
@@ -262,6 +277,9 @@ void Database::savePendingPayout(string address, uint64_t amount) {
 		Log::fatalError(sqlite3_errmsg(db));
 
 	sqlite3_close(db);
+
+	dbLock.unlock();
+
 }
 
 vector<sPendingPayout> Database::getPendingPayout() {
@@ -271,6 +289,7 @@ vector<sPendingPayout> Database::getPendingPayout() {
 
 	vector<sPendingPayout> result;
 
+	dbLock.lock();
 	rc = sqlite3_open("pool.db", &db);
 
 	if (rc == 0) {
@@ -296,6 +315,7 @@ vector<sPendingPayout> Database::getPendingPayout() {
 		Log::fatalError(sqlite3_errmsg(db));
 
 	sqlite3_close(db);
+	dbLock.unlock();
 
 	return result;
 }
@@ -306,6 +326,7 @@ void Database::deletePendingPayout(string address) {
 	sqlite3* db;
 	int rc;
 
+	dbLock.lock();
 	rc = sqlite3_open("pool.db", &db);
 
 	if (rc == 0) {
@@ -325,6 +346,7 @@ void Database::deletePendingPayout(string address) {
 		Log::fatalError(sqlite3_errmsg(db));
 
 	sqlite3_close(db);
+	dbLock.unlock();
 
 }
 

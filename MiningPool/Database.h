@@ -4,6 +4,7 @@
 #include <string>
 #include <time.h>
 #include <vector>
+#include <mutex>
 
 #include "sqlite3.h"
 
@@ -25,16 +26,19 @@ struct sPendingPayout {
 
 class Database
 {
+
+	mutex dbLock;
+
 public:
-	static int databaseExists();
-	static void createDatabase();
-	static void addShare(string wallet, string hash);
-	static vector<sShareSummary> countShares(time_t cutoffTime);
-	static void updateSharesProcessed(time_t cutoffTime);
-	static void savePayout(string address, uint64_t amount);
-	static void savePendingPayout(string address, uint64_t amount);
-	static bool pendingWalletExists(sqlite3* db, string address);
-	static vector<sPendingPayout> getPendingPayout();
-	static void deletePendingPayout(string address);
+	int databaseExists();
+	void createDatabase();
+	void addShare(string wallet, string hash);
+	vector<sShareSummary> countShares(time_t cutoffTime);
+	void updateSharesProcessed(time_t cutoffTime);
+	void savePayout(string address, uint64_t amount);
+	void savePendingPayout(string address, uint64_t amount);
+	bool pendingWalletExists(sqlite3* db, string address);
+	vector<sPendingPayout> getPendingPayout();
+	void deletePendingPayout(string address);
 };
 

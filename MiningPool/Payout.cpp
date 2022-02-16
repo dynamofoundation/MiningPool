@@ -17,8 +17,8 @@ void Payout::payoutJob( Global *global ) {
 
 			this_thread::sleep_for(std::chrono::seconds(2));
 
-			vector<sShareSummary> shares = Database::countShares(now);
-			Database::updateSharesProcessed(now);
+			vector<sShareSummary> shares = global->db->countShares(now);
+			global->db->updateSharesProcessed(now);
 
 			uint64_t totalShares = 0;
 			for (int i = 0; i < shares.size(); i++)
@@ -40,14 +40,14 @@ void Payout::payoutJob( Global *global ) {
 					if (payout >= global->settings->minPayout)
 						sendMoney(shares[i].wallet.substr(0, 42), payout, global);
 					else
-						Database::savePendingPayout(shares[i].wallet.substr(0, 42), payout);
+						global->db->savePendingPayout(shares[i].wallet.substr(0, 42), payout);
 				}
 
-				vector<sPendingPayout> pendingPayout = Database::getPendingPayout();
+				vector<sPendingPayout> pendingPayout = global->db->getPendingPayout();
 				for (int i = 0; i < pendingPayout.size(); i++) {
 					if (pendingPayout[i].amount > global->settings->minPayout) {
 						sendMoney(pendingPayout[i].wallet, pendingPayout[i].amount, global);
-						Database::deletePendingPayout(pendingPayout[i].wallet);
+						global->db->deletePendingPayout(pendingPayout[i].wallet);
 					}
 				}
 
@@ -69,5 +69,5 @@ void Payout::sendMoney(string address, uint64_t amount, Global *global) {
 
 	global->rpc->execRPC(strRequest, global->settings);
 
-	Database::savePayout(address, amount);
+	global->db->savePayout(address, amount);
 }

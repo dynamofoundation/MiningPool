@@ -1,11 +1,13 @@
-//payout logic - frequency / minimum / fee
-//drop connections with high reject
-//handle mining addresses with bad payout address
-//allow for addr.clientname format
-//kill inactive client threads
-//check correct pay to wallet in coinbase
-//log to console, file or database
-//load wallet on startup
+// payout logic - frequency / minimum / fee
+// drop connections with high reject
+// handle mining addresses with bad payout address
+// allow for addr.clientname format
+// kill inactive client threads
+// check correct pay to wallet in coinbase
+// log to console, file or database
+// load wallet on startup
+// record diff of each share - validate it
+// payout based on sum of difficulties
 //DONE  pass different extra nonce to each client  
 //DONE  tcp port based
 //DONE  adjust diff so block submission hits target of 3 submits per min
@@ -38,8 +40,8 @@ int main()
 
     Global* global = new Global();
 
-    if (!Database::databaseExists())
-        Database::createDatabase();
+    if (!global->db->databaseExists())
+        global->db->createDatabase();
 
     BlockScanner* scanner = new BlockScanner();
     thread scannerThread(&BlockScanner::scan, scanner, global);

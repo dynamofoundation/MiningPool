@@ -149,7 +149,7 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
                         if (hash_int < localTarget) {
                             sendBlockStatus(clientSocket, global->settings, "accept");
-                            Database::addShare(wallet, hash);
+                            global->db->addShare(wallet, hash);
                             submitShareCount++;
                             uint64_t networkTarget = BSWAP64(((uint64_t*)nativeTarget)[0]);
                             if (hash_int < networkTarget) {
