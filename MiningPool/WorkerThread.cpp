@@ -119,6 +119,10 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
                 if (!json::accept(line))        //if its not json then just exit
                     return;
 				json msg = json::parse(line.c_str());
+
+                if ((!msg.contains("command")) || (!msg.contains("data")))
+                    return;
+
 				const std::string& command = msg["command"];
 
 				if (command == "auth") {
