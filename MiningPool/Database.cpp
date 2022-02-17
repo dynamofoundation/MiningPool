@@ -46,6 +46,10 @@ void Database::createDatabase() {
 			"pending_payout_amount int not null, "  \
 			"pending_payout_timestamp int not null ); ";
 
+		if (sqlite3_exec(db, sql_pending_payout, NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+
+
 		const char* sql_block_submit = "create table block_submit (  "  \
 			"block_submit_hash text not null, "  \
 			"block_submit_timestamp int not null, "  \
