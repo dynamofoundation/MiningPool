@@ -18,13 +18,16 @@ Requirements:
 1.  Dynamo fullnode with RPC enabled and sync to blockchain
 
 2.  Create a wallet on the fullnode to hold mining proceeds and distribute.  Example:
+``
 dyn-cli -rpcconnect=127.0.0.1 -rpcuser=user -rpcpassword=123456 createwallet "mining"
 
 3.  Create an address to save the mining proceeds in.  Example:
+``
 dyn-cli -rpcconnect=127.0.0.1 -rpcuser=user -rpcpassword=123456 getnewaddress
 (note this address for the settings file later)
 
 4.  Update dynamo.conf for the new wallet and restart fullnode.  Example:
+``
 wallet=<name of wallet created in step 2>
 (this is not necessary but will make pool startup faster)
 
@@ -34,6 +37,7 @@ wallet=<name of wallet created in step 2>
 
 Explanation of settings.txt:
 
+```
 {
 	"clientListenPort" : 4567,        (This is the port miners will connect to)
 
@@ -51,3 +55,4 @@ Explanation of settings.txt:
 	
 	"httpPort" : 8086                 (The port number for the HTTP server user interface)
 }
+```
