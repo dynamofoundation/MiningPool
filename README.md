@@ -1,12 +1,15 @@
 # MiningPool
 
 Compiling:
+
 To compile for windows, open in VS2019 and build.  You will need curl and sqlite3.  These dependencies are most easily resolved with vcpkg.
 
 To compile for linux:
+
 g++-11 -I. -std=gnu++11 *.cpp -lcurl -lsqlite3 -o MiningPool
 
 The standard installation requires 3 files:
+
 MiningPool binary
 settings.txt  (contains json string of settings)
 webpack.dat   (contains packaged website for user interface)
