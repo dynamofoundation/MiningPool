@@ -33,35 +33,106 @@ void HTTPThread::clientWorker(int clientSocket, Global* global) {
 
     string URL = vTokens[1];
 
-    char* content;
-    int contentLen = 0;
-    if (global->webpack->pages.count(URL) == 0) {
-        closesocket(clientSocket);
-        return;
-    }
+    if (URL.substr(0, 4) == "/api")
+        processAPICall(URL, clientSocket, global);
     else {
-        content = global->webpack->pages[URL].data;
-        contentLen = global->webpack->pages[URL].len;
+        //its a page request, get from webpack
+
+        char* content;
+        int contentLen = 0;
+        if (global->webpack->pages.count(URL) == 0) {
+            closesocket(clientSocket);
+            return;
+        }
+        else {
+            content = global->webpack->pages[URL].data;
+            contentLen = global->webpack->pages[URL].len;
+        }
+
+        string mimeType = "text/html";
+        if (ends_with(URL, ".css"))
+            mimeType = "text/css";
+        else if (ends_with(URL, ".png"))
+            mimeType = "image/png";
+        else if (ends_with(URL, ".js"))
+            mimeType = "text/javascript";
+
+
+        string header = "HTTP/1.1 200 OK\r\n";
+        header += "Content-Type: " + mimeType + "\r\n";
+        header += "Content-Length: " + to_string(contentLen) + "\r\n";
+        header += "\r\n";
+
+        send(clientSocket, header.c_str(), header.size(), 0);
+        send(clientSocket, content, contentLen, 0);
+
+        closesocket(clientSocket);
     }
-
-    string mimeType = "text/html";
-    if (ends_with(URL, ".css"))
-        mimeType = "text/css";
-    else if (ends_with(URL, ".png"))
-        mimeType = "image/png";
-    else if (ends_with(URL, ".js"))
-        mimeType = "text/javascript";
-
-
-    string header = "HTTP/1.1 200 OK\r\n";
-    header += "Content-Type: " + mimeType + "\r\n";
-    header += "Content-Length: " + to_string(contentLen) + "\r\n";
-    header += "\r\n";
-
-    send(clientSocket, header.c_str(), header.size(), 0);
-    send(clientSocket, content, contentLen, 0);
-
-    closesocket(clientSocket);
 
 }
 
+
+
+vector<string> split(string str, string token) {
+    vector<string>result;
+    while (str.size()) {
+        int index = str.find(token);
+        if (index != string::npos) {
+            result.push_back(str.substr(0, index));
+            str = str.substr(index + token.size());
+            if (str.size() == 0)result.push_back(str);
+        }
+        else {
+            result.push_back(str);
+            str = "";
+        }
+    }
+    return result;
+}
+
+void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
+
+    json jResult;
+
+    string api = URL.substr(5);
+    string endpoint;
+    string args;
+
+    if (api.find("?") != string::npos) {
+        endpoint = api.substr(0, api.find("?"));
+        args = api.substr(api.find("?") + 1);
+    }
+    else
+        endpoint = api;
+
+    map<string,string> mArgs;
+    if (args.length() > 0) {
+        vector<string> params = split(args, "&");
+        for (int i = 0; i < params.size(); i++) {
+            vector<string> pair = split(params[i], "=");
+            mArgs.emplace(pair[0], pair[1]);
+        }
+    }
+
+
+    if (endpoint == "getuserdata") {
+        string wallet = mArgs["wallet"];
+        uint64_t unpaidBalance = global->db->getUnpaidBalanceForWallet(wallet);
+        jResult["unpaid_balance"] = Global::convertAtomToDecimal(unpaidBalance);
+    }
+
+
+    string strResult = jResult.dump();
+
+    string header = "HTTP/1.1 200 OK\r\n";
+    header += "Content-Type: application/json\r\n";
+    header += "Content-Length: " + to_string(strResult.length()) + "\r\n";
+    header += "\r\n";
+
+    send(clientSocket, header.c_str(), header.size(), 0);
+    send(clientSocket, strResult.c_str(), strResult.size(), 0);
+
+    closesocket(clientSocket);
+
+
+}

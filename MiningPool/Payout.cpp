@@ -17,19 +17,22 @@ void Payout::payoutJob( Global *global ) {
 
 			this_thread::sleep_for(std::chrono::seconds(2));
 
-			vector<sShareSummary> shares = global->db->countShares(now);
-
-			uint64_t totalShares = 0;
-			for (int i = 0; i < shares.size(); i++)
-				totalShares += shares[i].shareCount;
-
 			json jResult = global->rpc->execRPC("{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"getbalance\", \"params\": [\"*\", 10]}", global->settings);
 			
 			uint64_t balance = jResult["result"];
 			balance = balance * 100000000ULL;
 
 			if (balance > 100000000ULL) {
+				balance = balance - global->db->pendingPayouts();
+
+				vector<sShareSummary> shares = global->db->countShares(now);
+
+				uint64_t totalShares = 0;
+				for (int i = 0; i < shares.size(); i++)
+					totalShares += shares[i].shareCount;
+
 				global->db->updateSharesProcessed(now);
+
 				uint64_t operatorFee = (balance * global->settings->miningFeePercent) / 10000ULL;
 				sendMoney(global->settings->payoutWallet, operatorFee, global);
 
@@ -62,34 +65,10 @@ void Payout::payoutJob( Global *global ) {
 }
 
 
-string Payout::convertAtomToDecimal(uint64_t amount) {
-
-	//12345 =>  0.00012345
-	//0 => 0.00000000
-	//4567000000 => 45.67000000
-	//100000000 => 1.00000000
-
-	if (amount == 0)
-		return "0.00000000";
-	else if (amount < 100000000ULL) {
-		string strAmount = to_string(amount);
-		while (strAmount.length() < 8)
-			strAmount = "0" + strAmount;
-		strAmount = "0." + strAmount;
-		return strAmount;
-	}
-	else {
-		string strAmount = to_string(amount);
-		strAmount = strAmount.substr(0, strAmount.length() - 8) + "." + strAmount.substr(strAmount.length() - 8);
-		return strAmount;
-	}
-
-
-}
 
 void Payout::sendMoney(string address, uint64_t amount, Global *global) {
 
-	string strAmount = convertAtomToDecimal(amount);
+	string strAmount = Global::convertAtomToDecimal(amount);
 	
 	string strRequest = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"sendtoaddress\", \"params\": [\"" + address + "\", " + strAmount + ", \"\", \"\", true]}";
 

@@ -1,8 +1,11 @@
 // handle mining addresses with bad payout address
 // kill inactive client threads
 // log to console, file or database
+// occasional high-hash reject on cards with high hashrate
+// 
 //DONE log block submission hashes
-// support fractional percent mining fee
+//DONE support fractional percent mining fee
+//DONE subtract pending payout amounts from wallet balance when doing current payout calc
 
 #include <thread>
 
@@ -29,9 +32,6 @@ int main()
     if (res != NO_ERROR) 
         Log::fatalError("WSAStartup failed");
 #endif
-
-    WebPack* w = new WebPack();
-    w->load();
 
     Global* global = new Global();
 

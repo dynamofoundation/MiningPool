@@ -250,10 +250,8 @@ void Database::savePendingPayout(string address, uint64_t amount) {
 			sqlite3_stmt* stmt = NULL;
 			sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
-			sqlite3_bind_text(stmt, 1, address.c_str(), -1, NULL);
-			sqlite3_bind_int64(stmt, 2, amount);
-			sqlite3_bind_int64(stmt, 3, now);
-			sqlite3_bind_int64(stmt, 4, 0);
+			sqlite3_bind_int64(stmt, 1, amount);
+			sqlite3_bind_text(stmt, 2, address.c_str(), -1, NULL);
 
 			sqlite3_step(stmt);
 
@@ -328,6 +326,40 @@ vector<sPendingPayout> Database::getPendingPayout() {
 }
 
 
+uint64_t Database::pendingPayouts() {
+
+	uint64_t result = 0;
+
+	sqlite3* db;
+	int rc;
+
+	dbLock.lock();
+	rc = sqlite3_open("pool.db", &db);
+
+	if (rc == 0) {
+
+		const char* sql = "select sum(pending_payout_amount) from pending_payout;";
+
+		sqlite3_stmt* stmt = NULL;
+		sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+		if (sqlite3_step(stmt) == SQLITE_ROW) 
+			result = sqlite3_column_int64(stmt, 0);
+
+		sqlite3_finalize(stmt);
+
+	}
+	else
+		Log::fatalError(sqlite3_errmsg(db));
+
+	sqlite3_close(db);
+	dbLock.unlock();
+
+	return result;
+}
+
+
+
 void Database::deletePendingPayout(string address) {
 
 	sqlite3* db;
@@ -393,4 +425,39 @@ void Database::addBlockSubmit(string hash, string result) {
 
 	dbLock.unlock();
 
+}
+
+
+uint64_t Database::getUnpaidBalanceForWallet(string wallet) {
+
+	uint64_t result = 0;
+
+	sqlite3* db;
+	int rc;
+
+	dbLock.lock();
+	rc = sqlite3_open("pool.db", &db);
+
+	if (rc == 0) {
+
+		const char* sql = "select sum(pending_payout_amount) from pending_payout where pending_payout_wallet = @wallet;";
+
+		sqlite3_stmt* stmt = NULL;
+		sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+		sqlite3_bind_text(stmt, 1, wallet.c_str(), -1, NULL);
+
+		if (sqlite3_step(stmt) == SQLITE_ROW)
+			result = sqlite3_column_int64(stmt, 0);
+
+		sqlite3_finalize(stmt);
+
+	}
+	else
+		Log::fatalError(sqlite3_errmsg(db));
+
+	sqlite3_close(db);
+	dbLock.unlock();
+
+	return result;
 }

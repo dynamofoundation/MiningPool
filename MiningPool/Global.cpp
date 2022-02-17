@@ -11,6 +11,7 @@ Global::Global() {
     rpc->init();
 
     webpack = new WebPack();
+    //webpack->save();
     webpack->load();
 
     db = new Database();
@@ -26,6 +27,31 @@ Global::Global() {
 uint32_t Global::getExtraNonce() {
     extraNonce++;
     return extraNonce;
+}
+
+
+string Global::convertAtomToDecimal(uint64_t amount) {
+
+    //12345 =>  0.00012345
+    //0 => 0.00000000
+    //4567000000 => 45.67000000
+    //100000000 => 1.00000000
+
+    if (amount == 0)
+        return "0.00000000";
+    else if (amount < 100000000ULL) {
+        string strAmount = to_string(amount);
+        while (strAmount.length() < 8)
+            strAmount = "0" + strAmount;
+        strAmount = "0." + strAmount;
+        return strAmount;
+    }
+    else {
+        string strAmount = to_string(amount);
+        strAmount = strAmount.substr(0, strAmount.length() - 8) + "." + strAmount.substr(strAmount.length() - 8);
+        return strAmount;
+    }
+
 }
 
 

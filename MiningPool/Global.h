@@ -42,5 +42,7 @@ public:
 
 	uint32_t getExtraNonce();
 
+	static string convertAtomToDecimal(uint64_t amount);
+
 };
 

@@ -20,5 +20,6 @@ class HTTPThread
 {
 public:
 	void clientWorker(int clientSocket, Global* global);
+	void processAPICall(string URL, int clientSocket, Global* global);
 };
 

@@ -41,5 +41,8 @@ public:
 	vector<sPendingPayout> getPendingPayout();
 	void deletePendingPayout(string address);
 	void addBlockSubmit(string hash, string result);
+	uint64_t pendingPayouts();
+
+	uint64_t getUnpaidBalanceForWallet(string wallet);
 };
 
