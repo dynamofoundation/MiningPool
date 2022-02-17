@@ -153,6 +153,7 @@
     <ClCompile Include="SocketServer.cpp" />
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="MiningPool.cpp" />
+    <ClCompile Include="WebPack.cpp" />
     <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +172,7 @@
     <ClInclude Include="SocketServer.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="struct.h" />
+    <ClInclude Include="WebPack.h" />
     <ClInclude Include="WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>

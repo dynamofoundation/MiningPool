@@ -182,6 +182,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
                             if (hash_int < networkTarget) {
                                 json jResult = global->rpc->execRPC("{ \"id\": 0, \"method\" : \"submitblock\", \"params\" : [\"" + data + "\"] }", global->settings);
 
+                                global->db->addBlockSubmit(hash, jResult.dump());
+
                                 if (jResult["error"].is_null()) {
                                     Log::log("Submitted share to network %s", hash.c_str());
                                     if (jResult["result"] == "high-hash")

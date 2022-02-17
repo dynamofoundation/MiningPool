@@ -30,7 +30,7 @@ void Payout::payoutJob( Global *global ) {
 
 			if (balance > 100000000ULL) {
 				global->db->updateSharesProcessed(now);
-				uint64_t operatorFee = (balance * global->settings->miningFeePercent) / 100;
+				uint64_t operatorFee = (balance * global->settings->miningFeePercent) / 10000ULL;
 				sendMoney(global->settings->payoutWallet, operatorFee, global);
 
 				balance -= operatorFee;

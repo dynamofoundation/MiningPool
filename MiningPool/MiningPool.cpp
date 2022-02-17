@@ -1,7 +1,8 @@
 // handle mining addresses with bad payout address
 // kill inactive client threads
 // log to console, file or database
-
+//DONE log block submission hashes
+// support fractional percent mining fee
 
 #include <thread>
 
@@ -14,6 +15,7 @@
 #include "BlockScanner.h"
 #include "RPC.h"
 #include "HTTPServer.h"
+#include "WebPack.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -27,6 +29,9 @@ int main()
     if (res != NO_ERROR) 
         Log::fatalError("WSAStartup failed");
 #endif
+
+    WebPack* w = new WebPack();
+    w->load();
 
     Global* global = new Global();
 

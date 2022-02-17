@@ -14,6 +14,7 @@
 #include "json.hpp"
 
 #include "Global.h"
+#include "WebPack.h"
 
 class HTTPThread
 {

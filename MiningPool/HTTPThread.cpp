@@ -1,6 +1,12 @@
 #include "HTTPThread.h"
 
 
+inline bool ends_with(std::string const& value, std::string const& ending)
+{
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 void HTTPThread::clientWorker(int clientSocket, Global* global) {
 
     const unsigned int MAX_BUF_LENGTH = 4096;
@@ -27,20 +33,33 @@ void HTTPThread::clientWorker(int clientSocket, Global* global) {
 
     string URL = vTokens[1];
 
+    char* content;
+    int contentLen = 0;
+    if (global->webpack->pages.count(URL) == 0) {
+        closesocket(clientSocket);
+        return;
+    }
+    else {
+        content = global->webpack->pages[URL].data;
+        contentLen = global->webpack->pages[URL].len;
+    }
 
+    string mimeType = "text/html";
+    if (ends_with(URL, ".css"))
+        mimeType = "text/css";
+    else if (ends_with(URL, ".png"))
+        mimeType = "image/png";
+    else if (ends_with(URL, ".js"))
+        mimeType = "text/javascript";
 
-    string body = vTokens[1].c_str();
 
     string header = "HTTP/1.1 200 OK\r\n";
-    header += "Content-Type: text/html\r\n";
-    header += "Content-Length: " + to_string(body.size()) + "\r\n";
-    header += "\r\n\r\n";
+    header += "Content-Type: " + mimeType + "\r\n";
+    header += "Content-Length: " + to_string(contentLen) + "\r\n";
+    header += "\r\n";
 
-    string response = header + body;
-
-    send(clientSocket, response.c_str(), response.size(), 0);
-
-
+    send(clientSocket, header.c_str(), header.size(), 0);
+    send(clientSocket, content, contentLen, 0);
 
     closesocket(clientSocket);
 

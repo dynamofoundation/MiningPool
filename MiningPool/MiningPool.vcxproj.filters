@@ -57,6 +57,9 @@
     <ClCompile Include="cProgramVM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WebPack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SocketServer.h">
@@ -105,6 +108,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cProgramVM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebPack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

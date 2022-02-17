@@ -40,5 +40,6 @@ public:
 	bool pendingWalletExists(sqlite3* db, string address);
 	vector<sPendingPayout> getPendingPayout();
 	void deletePendingPayout(string address);
+	void addBlockSubmit(string hash, string result);
 };
 

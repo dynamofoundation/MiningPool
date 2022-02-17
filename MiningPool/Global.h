@@ -13,6 +13,7 @@ using namespace std;
 #include "Settings.h"
 #include "RPC.h"
 #include "Database.h"
+#include "WebPack.h"
 #include "sha256.h"
 
 class Global
@@ -24,6 +25,7 @@ public:
 	Settings* settings;
 	RPC* rpc;
 	Database* db;
+	WebPack* webpack;
 
 	int currentBlockHeight;
 	atomic<uint32_t> extraNonce;

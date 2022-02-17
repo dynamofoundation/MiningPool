@@ -46,7 +46,12 @@ void Database::createDatabase() {
 			"pending_payout_amount int not null, "  \
 			"pending_payout_timestamp int not null ); ";
 
-		if (sqlite3_exec(db, sql_pending_payout, NULL, 0, &errorMsg) != SQLITE_OK)
+		const char* sql_block_submit = "create table block_submit (  "  \
+			"block_submit_hash text not null, "  \
+			"block_submit_timestamp int not null, "  \
+			"block_submit_result text not null ); ";
+
+		if (sqlite3_exec(db, sql_block_submit, NULL, 0, &errorMsg) != SQLITE_OK)
 			Log::fatalError(errorMsg);
 
 	}
@@ -66,8 +71,6 @@ void Database::addShare(string wallet, string hash, int difficulty) {
 	int rc;
 
 	rc = sqlite3_open("pool.db", &db);
-
-	
 
 	if (rc == 0) {
 		time_t now;
@@ -355,3 +358,39 @@ void Database::deletePendingPayout(string address) {
 }
 
 
+void Database::addBlockSubmit(string hash, string result) {
+
+	dbLock.lock();
+
+	sqlite3* db;
+	int rc;
+
+	rc = sqlite3_open("pool.db", &db);
+
+	if (rc == 0) {
+		time_t now;
+		time(&now);
+
+		const char* sql = "insert into block_submit ( block_submit_hash, block_submit_timestamp, block_submit_result) values (@hash, @timestamp, @result)";
+
+		sqlite3_stmt* stmt = NULL;
+		sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+		sqlite3_bind_text(stmt, 1, hash.c_str(), -1, NULL);
+		sqlite3_bind_int64(stmt, 2, now);
+		sqlite3_bind_text(stmt, 3, result.c_str(), -1, NULL);
+
+		sqlite3_step(stmt);
+
+		if (sqlite3_finalize(stmt) != SQLITE_OK)
+			Log::fatalError(sqlite3_errmsg(db));
+
+	}
+	else
+		Log::fatalError(sqlite3_errmsg(db));
+
+	sqlite3_close(db);
+
+	dbLock.unlock();
+
+}

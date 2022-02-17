@@ -10,6 +10,9 @@ Global::Global() {
     rpc = new RPC();
     rpc->init();
 
+    webpack = new WebPack();
+    webpack->load();
+
     db = new Database();
 
     currentBlockHeight = -1;
