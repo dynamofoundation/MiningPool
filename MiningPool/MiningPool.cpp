@@ -1,11 +1,10 @@
+//TODO:
 // handle mining addresses with bad payout address
 // kill inactive client threads
 // log to console, file or database
 // occasional high-hash reject on cards with high hashrate
-// 
-//DONE log block submission hashes
-//DONE support fractional percent mining fee
-//DONE subtract pending payout amounts from wallet balance when doing current payout calc
+// add index to tables for performance
+
 
 #include <thread>
 
