@@ -224,6 +224,7 @@ bool Database::pendingWalletExists(sqlite3* db, string address) {
 	const char* sql = "select count(1) from pending_payout where pending_payout_wallet = @wallet;";
 
 	sqlite3_stmt* stmt = NULL;
+	sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 	sqlite3_bind_text(stmt, 1, address.c_str(), -1, NULL);
 
 	
