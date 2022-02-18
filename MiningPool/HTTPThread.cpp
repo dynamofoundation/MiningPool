@@ -32,7 +32,7 @@ void HTTPThread::clientWorker(int clientSocket, Global* global) {
         istringstream sTokens(URI);
         vector<string> vTokens((istream_iterator<string>(sTokens)), istream_iterator<string>());
 
-        if (vTokens.size() != 2) {
+        if (vTokens.size() < 2) {
             closesocket(clientSocket);
             return;
         }
