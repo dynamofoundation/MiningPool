@@ -6,6 +6,13 @@
 #include "HTTPThread.h"
 #include "Global.h"
 
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/socket.h> 
+#endif
+
+
 #ifdef _WIN32
 #include <windows.h>
 #endif

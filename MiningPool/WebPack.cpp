@@ -4,6 +4,7 @@
 
 void WebPack::save() {
 
+#ifdef _WIN32
     string folder = "c:/webpack/";
 
     std::vector<std::string> files;
@@ -77,6 +78,8 @@ void WebPack::save() {
         _close(datfile);
     }
     _close(outfile);
+
+#endif
 }
 
 
