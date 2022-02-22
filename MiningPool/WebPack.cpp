@@ -85,23 +85,23 @@ void WebPack::load() {
     //max size of any one file is 1mb
     char* buff = (char*)malloc(1024 * 1024);
 
-    int infile = _open("webpack.dat", _O_BINARY);
-    if (infile == -1)
-        Log::fatalError("Cannot open ewbpack.dat");
+    FILE* infile = fopen("webpack.dat", "rb");
+    if (infile == NULL)
+        Log::fatalError("Cannot open webpack.dat");
 
-    _lseek(infile, 0, SEEK_END);
-    int size = _tell(infile);
-    _lseek(infile, 0, SEEK_SET);
+    fseek(infile, 0, SEEK_END);
+    int size = ftell(infile);
+    fseek(infile, 0, SEEK_SET);
     int ptr = 0;
     while (ptr < size) {
         int fnlen;
-        _read(infile, &fnlen, 4);
-        _read(infile, buff, fnlen);
+        fread(&fnlen, 4, 1, infile);
+        fread(buff, 1, fnlen, infile);
         buff[fnlen] = 0;
         string strName(buff);
         int datlen;
-        _read(infile, &datlen, 4);
-        _read(infile, buff, datlen);
+        fread(&datlen, 4, 1, infile);
+        fread(buff, 1, datlen, infile);
         sFile newFile;
         newFile.data = (char*)malloc(datlen);
         memcpy(newFile.data, buff, datlen);
@@ -109,7 +109,7 @@ void WebPack::load() {
         pages.emplace(strName, newFile);
         ptr += 4 + fnlen + 4 + datlen;
     }
-    _close(infile);
+    fclose(infile);
 
     free(buff);
 }

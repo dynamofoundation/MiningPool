@@ -1,5 +1,9 @@
 #include "HTTPThread.h"
 
+#ifdef __linux__
+#define closesocket close
+#endif
+
 
 inline bool ends_with(std::string const& value, std::string const& ending)
 {
