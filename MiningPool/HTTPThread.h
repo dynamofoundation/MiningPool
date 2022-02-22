@@ -11,6 +11,13 @@
 #include <windows.h>
 #endif
 
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/socket.h> 
+#include <unistd.h>
+#endif
+
 #include "json.hpp"
 
 #include "Global.h"

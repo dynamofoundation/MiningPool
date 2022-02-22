@@ -12,6 +12,10 @@
 #include <io.h>
 #endif
 
+#ifdef __linux__
+#include <string.h>
+#endif
+
 #include "Log.h"
 
 using namespace std;
