@@ -108,8 +108,14 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
 		//TODO - evaluate memory leaks due to return
 		if (numRecv <= 0) {
+#ifdef _WIN32
 			uint32_t errorNum = GetLastError();
 			Log::log("Client thread %d exiting with error %d", extraNonce, errorNum);
+#endif
+#ifdef __linux__
+            Log::log("Client thread %d exiting with error %d", extraNonce, errno);
+#endif
+
 			socketError = true;
 			return;
 		}
