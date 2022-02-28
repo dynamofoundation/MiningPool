@@ -82,8 +82,8 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 	vector<char> buffer;
 	string wallet = "";
 
-	difficulty = 1;
-    previousDifficulty = 1;
+	difficulty = global->settings->startDifficulty;
+    previousDifficulty = global->settings->startDifficulty;
 	lastBlockHeightSent = -1;
     rejectCount = 0;
 

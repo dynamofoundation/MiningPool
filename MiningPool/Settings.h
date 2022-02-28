@@ -28,6 +28,7 @@ public:
 	int payoutPeriod;
 	uint64_t minPayout;
 	uint64_t payoutFee;
+	int startDifficulty;
 
 	int httpPort;
 };
