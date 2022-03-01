@@ -12,6 +12,7 @@
 	"payoutPeriod" : 3600,
 	"minPayout" : 50000000,
 	"payoutFee" : 10000,
+	"startDifficulty" : 32,
 	
 	"httpPort" : 8086
 }
