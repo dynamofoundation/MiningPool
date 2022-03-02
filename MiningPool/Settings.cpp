@@ -25,6 +25,7 @@ void Settings::readSettings() {
 		payoutPeriod = jSettings["payoutPeriod"];
 		minPayout = jSettings["minPayout"];
 		payoutFee = jSettings["payoutFee"];
+		startDifficulty = jSettings["startDifficulty"];
 
 		httpPort = jSettings["httpPort"];
 
