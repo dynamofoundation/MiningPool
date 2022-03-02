@@ -3,7 +3,7 @@
 
 size_t address_to_script(unsigned char* out, size_t outsz, const char* addr);
 
-Global::Global() {
+Global::Global(bool makeWebpack) {
     settings = new Settings();
     settings->readSettings();
 
@@ -11,7 +11,8 @@ Global::Global() {
     rpc->init();
 
     webpack = new WebPack();
-    //webpack->save();
+    if (makeWebpack)
+        webpack->save();
     webpack->load();
 
     db = new Database();

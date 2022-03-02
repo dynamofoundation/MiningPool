@@ -22,6 +22,7 @@
 
 #include "Global.h"
 #include "WebPack.h"
+#include "Payout.h"
 
 class HTTPThread
 {
