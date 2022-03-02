@@ -148,7 +148,7 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         string strNextPayout = to_string(nextPayoutMin) + "min " + to_string(nextPayoutSec) + " sec";
         jResult["next_payout"] = strNextPayout;
 
-        vector<vector<string>> foundBlocks = global->db->execSQL("select block_submit_hash, block_submit_timestamp order by block_submit_timestamp desc limit 30");
+        vector<vector<string>> foundBlocks = global->db->execSQL("select block_submit_hash, block_submit_timestamp from block_submit order by block_submit_timestamp desc limit 30");
         string strFoundBlocks = "<table>";
         for (int row = 0; row < foundBlocks.size(); row++) {
             strFoundBlocks += "<tr>";
@@ -163,7 +163,7 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         jResult["found_blocks"] = strFoundBlocks;
 
 
-        vector<vector<string>> dbCurrentShares = global->db->execSQL("select share_hash, share_difficulty, share_timestamp from share_wallet where share_processed = 0 and share_wallet = " + wallet + " order by share_timestamp desc");
+        vector<vector<string>> dbCurrentShares = global->db->execSQL("select share_hash, share_difficulty, share_timestamp from share where share_processed = 0 and share_wallet = '" + wallet + "' order by share_timestamp desc");
         string strCurrentShares = "<table>";
         for (int row = 0; row < dbCurrentShares.size(); row++) {
             strCurrentShares += "<tr>";
@@ -179,7 +179,7 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         jResult["current_shares"] = strCurrentShares;
 
 
-        vector<vector<string>> dbPayouts = global->db->execSQL("select payout_txid, payout_amount, payout_timestamp from payout where payout_wallet = " + wallet + " order by payout_timestamp desc limit 30 ");
+        vector<vector<string>> dbPayouts = global->db->execSQL("select payout_txid, payout_amount, payout_timestamp from payout where payout_wallet = '" + wallet + "' order by payout_timestamp desc limit 30 ");
         string strPayouts = "<table>";
         for (int row = 0; row < dbPayouts.size(); row++) {
             strPayouts += "<tr>";
