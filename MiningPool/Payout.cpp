@@ -1,11 +1,10 @@
 #include "Payout.h"
-
+#include "Global.h"
 
 void Payout::payoutJob( Global *global ) {
 
 	Log::log("Starting payout server.");
 
-	time_t lastPayout;
 	time(&lastPayout);
 
 	while (true) {
@@ -72,7 +71,7 @@ void Payout::sendMoney(string address, uint64_t amount, Global *global) {
 	
 	string strRequest = "{\"jsonrpc\": \"1.0\", \"id\": \"1\", \"method\": \"sendtoaddress\", \"params\": [\"" + address + "\", " + strAmount + ", \"\", \"\", true]}";
 
-	global->rpc->execRPC(strRequest, global->settings);
+	json jResult = global->rpc->execRPC(strRequest, global->settings);
 
-	global->db->savePayout(address, amount);
+	global->db->savePayout(address, amount, jResult.dump());
 }

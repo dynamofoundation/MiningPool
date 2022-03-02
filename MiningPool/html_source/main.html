@@ -1,0 +1,89 @@
+<html>
+
+<head>
+<script src="/jquery/jquery.min.js"></script>
+<script src="/jquery-ui/jquery-ui.min.js"></script></head>
+<link rel="stylesheet" href="/jquery-ui/jquery-ui.min.css">
+<link rel="stylesheet" href="/jquery-ui/jquery-ui.theme.min.css">
+
+  <script>
+  $( function() {
+    $( "#reportTabs" ).tabs();
+  } );
+  </script>
+  
+  <script>
+  $( function() {
+    $( ".widget button" ).button();
+    $( "button" ).click( function( event ) {	
+		var wallet = $("#txtWallet").val();
+		$.ajax({
+			url : '/api/getuserdata',
+			type : 'GET',
+			data : {
+				'wallet' : wallet
+			},
+			dataType:'json',
+			success : function(data) {   
+				$("#divUnpaidBalance").html (data["unpaid_balance"]);
+				$("#divCurrentShares").html (data["current_shares"]);
+				$("#divNextPayout").html (data["next_payout"]);
+				$("#divFoundBlocks").html (data["found_blocks"]);
+				$("#divPayouts").html (data["payouts"]);				
+			},
+			error : function(request,error)
+			{
+				alert("Request: "+JSON.stringify(request));
+			}
+		});
+		event.preventDefault();
+    } );
+  } );  
+  </script>
+  
+</head>
+
+<body>
+
+
+Enter your wallet address:<input type="text" id = "txtWallet">
+<button class="ui-button ui-widget ui-corner-all">Search</button>
+<br><br>
+<div id="reportTabs">
+  <ul>
+    <li><a href="#tabStats">Stats</a></li>
+    <li><a href="#tabPayouts">Payouts</a></li>
+    <li><a href="#tabRewards">Rewards</a></li>
+  </ul>
+  
+  <div id="tabStats">
+  
+	Unpaid balance:<div id="divUnpaidBalance"></div><br>
+	
+	Current shares:<br>
+	<div id="divCurrentShares></div>
+	<br><br>
+
+	Next payout:<div id="divNextPayout"></div><br>
+
+
+	Server blocks:<br>
+	<div id="divFoundBlocks></div>
+	<br><br>
+
+	Payout history:<br>
+	<div id="divPayouts></div>
+	<br><br>
+
+    
+  <div id="tabPayouts">
+  </div>
+  
+  <div id="tabRewards">
+  </div>
+  
+</div>
+
+</body>
+
+</html>

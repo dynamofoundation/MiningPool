@@ -14,18 +14,20 @@ using namespace std;
 #include "RPC.h"
 #include "Database.h"
 #include "WebPack.h"
+#include "Payout.h"
 #include "sha256.h"
 
 class Global
 {
 
 public:
-	Global();
+	Global(bool makeWebpack);
 
 	Settings* settings;
 	RPC* rpc;
 	Database* db;
 	WebPack* webpack;
+	Payout* payout;
 
 	int currentBlockHeight;
 	atomic<uint32_t> extraNonce;

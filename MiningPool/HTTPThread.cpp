@@ -131,8 +131,70 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
 
     if (endpoint == "getuserdata") {
         string wallet = mArgs["wallet"];
+
+        //sanitize for sql injection because we cant easily parameterize all queries
+        for (int i = 0; i < wallet.length(); i++)
+            if (string("0123456789abcdefghijklmnopqrstuvwxyz").find(wallet[i]) == string::npos)
+                return;
+
         uint64_t unpaidBalance = global->db->getUnpaidBalanceForWallet(wallet);
         jResult["unpaid_balance"] = Global::convertAtomToDecimal(unpaidBalance);
+
+        time_t now;
+        time(&now);
+        int nextPayout = global->settings->payoutPeriod - (now - global->payout->lastPayout);
+        int nextPayoutMin = nextPayout / 60;
+        int nextPayoutSec = nextPayout - (nextPayoutMin * 60);
+        string strNextPayout = to_string(nextPayoutMin) + "min " + to_string(nextPayoutSec) + " sec";
+        jResult["next_payout"] = strNextPayout;
+
+        vector<vector<string>> foundBlocks = global->db->execSQL("select block_submit_hash, block_submit_timestamp order by block_submit_timestamp desc limit 30");
+        string strFoundBlocks = "<table>";
+        for (int row = 0; row < foundBlocks.size(); row++) {
+            strFoundBlocks += "<tr>";
+            strFoundBlocks += "<td>" + foundBlocks[row][0] + "</td>";
+            time_t t = atoll(foundBlocks[row][1].c_str());
+            struct tm* timeStamp = localtime(&t);
+            char cTime[256];
+            strftime(cTime, 256, "%c", timeStamp);
+            strFoundBlocks += "</tr>";
+        }
+        strFoundBlocks += "</table>";
+        jResult["found_blocks"] = strFoundBlocks;
+
+
+        vector<vector<string>> dbCurrentShares = global->db->execSQL("select share_hash, share_difficulty, share_timestamp from share_wallet where share_processed = 0 and share_wallet = " + wallet + " order by share_timestamp desc");
+        string strCurrentShares = "<table>";
+        for (int row = 0; row < dbCurrentShares.size(); row++) {
+            strCurrentShares += "<tr>";
+            strCurrentShares += "<td>" + dbCurrentShares[row][0] + "</td>";
+            strCurrentShares += "<td>" + dbCurrentShares[row][1] + "</td>";
+            time_t t = atoll(dbCurrentShares[row][2].c_str());
+            struct tm* timeStamp = localtime(&t);
+            char cTime[256];
+            strftime(cTime, 256, "%c", timeStamp);
+            strCurrentShares += "</tr>";
+        }
+        strCurrentShares += "</table>";
+        jResult["current_shares"] = strCurrentShares;
+
+
+        vector<vector<string>> dbPayouts = global->db->execSQL("select payout_txid, payout_amount, payout_timestamp from payout where payout_wallet = " + wallet + " order by payout_timestamp desc limit 30 ");
+        string strPayouts = "<table>";
+        for (int row = 0; row < dbPayouts.size(); row++) {
+            strPayouts += "<tr>";
+            strPayouts += "<td>" + dbPayouts[row][0] + "</td>";
+            strPayouts += "<td>" + dbPayouts[row][1] + "</td>";
+            time_t t = atoll(dbPayouts[row][2].c_str());
+            struct tm* timeStamp = localtime(&t);
+            char cTime[256];
+            strftime(cTime, 256, "%c", timeStamp);
+            strPayouts += "</tr>";
+        }
+        strPayouts += "</table>";
+        jResult["payouts"] = strPayouts;
+
+
     }
 
 

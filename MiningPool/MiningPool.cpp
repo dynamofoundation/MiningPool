@@ -22,7 +22,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-int main()
+int main(int argc, char* argv[])
 {
 
 #ifdef _WIN32
@@ -32,10 +32,17 @@ int main()
         Log::fatalError("WSAStartup failed");
 #endif
 
-    Global* global = new Global();
+    bool makeWebpack = false;
+    if (argc > 1)
+        if (string(argv[1]) == "make_webpack")
+            makeWebpack = true;
+
+    Global* global = new Global(makeWebpack);
 
     if (!global->db->databaseExists())
         global->db->createDatabase();
+
+    global->db->upgradeDatabase();
 
     json jResult = global->rpc->execRPC("{\"jsonrpc\": \"1.0\", \"id\":\"\", \"method\": \"loadwallet\", \"params\": [\"" + global->settings->rpcWallet + "\"] }", global->settings);
     if (jResult["error"].contains("code")) {
@@ -58,6 +65,8 @@ int main()
     Payout* payout = new Payout();
     thread payoutThread(&Payout::payoutJob, payout, global);
     payoutThread.detach();
+
+    global->payout = payout;
 
 
     HTTPServer* httpServer = new HTTPServer();

@@ -32,10 +32,12 @@ class Database
 public:
 	int databaseExists();
 	void createDatabase();
+	void upgradeDatabase();
+	bool indexExists(string idxName, sqlite3* db);
 	void addShare(string wallet, string hash, int difficulty);
 	vector<sShareSummary> countShares(time_t cutoffTime);
 	void updateSharesProcessed(time_t cutoffTime);
-	void savePayout(string address, uint64_t amount);
+	void savePayout(string address, uint64_t amount, string txid);
 	void savePendingPayout(string address, uint64_t amount);
 	bool pendingWalletExists(sqlite3* db, string address);
 	vector<sPendingPayout> getPendingPayout();
@@ -44,5 +46,7 @@ public:
 	uint64_t pendingPayouts();
 
 	uint64_t getUnpaidBalanceForWallet(string wallet);
+
+	vector<vector<string>> execSQL(string sql);
 };
 

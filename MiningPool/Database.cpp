@@ -30,15 +30,31 @@ void Database::createDatabase() {
 
 		if ( sqlite3_exec(db, sql_share, NULL, 0, &errorMsg) !=  SQLITE_OK) 
 			Log::fatalError(errorMsg);
-		
+
+		const char* idx1 = "create index share_wallet_idx on share(share_wallet)";
+		if (sqlite3_exec(db, idx1, NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+		const char* idx2 = "create index share_processed_idx on share(share_processed)";
+		if (sqlite3_exec(db, idx2, NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+
+
+
+
 		const char* sql_payout = "create table payout (  "  \
 			"payout_wallet text not null, "  \
 			"payout_amount int not null, "  \
-			"payout_timestamp int not null );"  \
-			;
+			"payout_timestamp int not null, "  \
+			"payout_txid text not null); ";
+			
 
 		if (sqlite3_exec(db, sql_payout, NULL, 0, &errorMsg) != SQLITE_OK)
 			Log::fatalError(errorMsg);
+
+		const char* idx3 = "create index payout_wallet_idx on payout(payout_wallet)";
+		if (sqlite3_exec(db, idx3, NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+
 
 
 		const char* sql_pending_payout = "create table pending_payout (  "  \
@@ -49,6 +65,12 @@ void Database::createDatabase() {
 		if (sqlite3_exec(db, sql_pending_payout, NULL, 0, &errorMsg) != SQLITE_OK)
 			Log::fatalError(errorMsg);
 
+		const char* idx4 = "create index pending_payout_wallet_idx on pending_payout(pending_payout_wallet)";
+		if (sqlite3_exec(db, idx4, NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+
+
+
 
 		const char* sql_block_submit = "create table block_submit (  "  \
 			"block_submit_hash text not null, "  \
@@ -58,11 +80,111 @@ void Database::createDatabase() {
 		if (sqlite3_exec(db, sql_block_submit, NULL, 0, &errorMsg) != SQLITE_OK)
 			Log::fatalError(errorMsg);
 
+
+		const char* idx5 = "create index block_submit_timestamp_idx on block_submit(block_submit_timestamp)";
+		if (sqlite3_exec(db, idx5, NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+
+
+
 	}
 	else 
 		Log::fatalError(sqlite3_errmsg(db));
 
 	sqlite3_close(db);
+
+}
+
+
+void Database::upgradeDatabase() {
+	sqlite3* db;
+	int rc;
+	char* errorMsg;
+
+	rc = sqlite3_open("pool.db", &db);
+
+
+
+	if (rc == 0) {
+		const char* sql1 = "PRAGMA table_info(payout);";
+
+		sqlite3_stmt* stmt = NULL;
+		sqlite3_prepare_v2(db, sql1, -1, &stmt, NULL);
+
+		bool payoutTXIDColFound = false;
+		while (sqlite3_step(stmt) == SQLITE_ROW) {
+			string colName  = string((char*)sqlite3_column_text(stmt, 1));
+			if (colName == "payout_txid")
+				payoutTXIDColFound = true;
+		}
+		sqlite3_finalize(stmt);
+
+		if (!payoutTXIDColFound) {
+			const char* alter1 = "alter table payout add column payout_txid text not null default '';";
+			if (sqlite3_exec(db, alter1, NULL, 0, &errorMsg) != SQLITE_OK)
+				Log::fatalError(errorMsg);
+		}
+
+
+
+		if (!indexExists("share_wallet_idx", db)) {
+			const char* idx1 = "create index share_wallet_idx on share(share_wallet)";
+			if (sqlite3_exec(db, idx1, NULL, 0, &errorMsg) != SQLITE_OK)
+				Log::fatalError(errorMsg);
+			const char* idx2 = "create index share_processed_idx on share(share_processed)";
+			if (sqlite3_exec(db, idx2, NULL, 0, &errorMsg) != SQLITE_OK)
+				Log::fatalError(errorMsg);
+		}
+			
+
+
+
+		if (!indexExists("payout_wallet_idx", db)) {
+			const char* idx3 = "create index payout_wallet_idx on payout(payout_wallet)";
+			if (sqlite3_exec(db, idx3, NULL, 0, &errorMsg) != SQLITE_OK)
+				Log::fatalError(errorMsg);
+		}
+
+
+
+
+		if (!indexExists("pending_payout_wallet_idx", db)) {
+			const char* idx4 = "create index pending_payout_wallet_idx on pending_payout(pending_payout_wallet)";
+			if (sqlite3_exec(db, idx4, NULL, 0, &errorMsg) != SQLITE_OK)
+				Log::fatalError(errorMsg);
+		}
+
+
+		
+		if (!indexExists("block_submit_timestamp_idx", db)) {
+			const char* idx5 = "create index block_submit_timestamp_idx on block_submit(block_submit_timestamp)";
+			if (sqlite3_exec(db, idx5, NULL, 0, &errorMsg) != SQLITE_OK)
+				Log::fatalError(errorMsg);
+		}
+
+
+	}
+	else
+		Log::fatalError(sqlite3_errmsg(db));
+
+	sqlite3_close(db);
+}
+
+bool Database::indexExists(string idxName, sqlite3* db) {
+
+
+	string sql = "SELECT count(1) FROM sqlite_master WHERE type='index' and name='" + idxName + "'";
+
+	sqlite3_stmt* stmt = NULL;
+	sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL);
+
+	int result = 0;
+	if (sqlite3_step(stmt) == SQLITE_ROW)
+		result = sqlite3_column_int64(stmt, 0);
+
+	sqlite3_finalize(stmt);
+
+	return (result == 1);
 
 }
 
@@ -184,7 +306,7 @@ void Database::updateSharesProcessed(time_t cutoffTime) {
 	
 }
 
-void Database::savePayout(string address, uint64_t amount) {
+void Database::savePayout(string address, uint64_t amount, string txid) {
 
 	sqlite3* db;
 	int rc;
@@ -196,7 +318,7 @@ void Database::savePayout(string address, uint64_t amount) {
 		time_t now;
 		time(&now);
 
-		const char* sql = "insert into payout ( payout_wallet, payout_amount, payout_timestamp) values (@wallet, @amount, @timestamp)";
+		const char* sql = "insert into payout ( payout_wallet, payout_amount, payout_timestamp, payout_txid) values (@wallet, @amount, @timestamp, @txid)";
 
 		sqlite3_stmt* stmt = NULL;
 		sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -204,6 +326,7 @@ void Database::savePayout(string address, uint64_t amount) {
 		sqlite3_bind_text(stmt, 1, address.c_str(), -1, NULL);
 		sqlite3_bind_int64(stmt, 2, amount);
 		sqlite3_bind_int64(stmt, 3, now);
+		sqlite3_bind_text(stmt, 4, txid.c_str(), -1, NULL);
 
 		sqlite3_step(stmt);
 
@@ -456,6 +579,40 @@ uint64_t Database::getUnpaidBalanceForWallet(string wallet) {
 			result = sqlite3_column_int64(stmt, 0);
 
 		sqlite3_finalize(stmt);
+
+	}
+	else
+		Log::fatalError(sqlite3_errmsg(db));
+
+	sqlite3_close(db);
+	dbLock.unlock();
+
+	return result;
+}
+
+
+vector<vector<string>> Database::execSQL(string sql) {
+
+	sqlite3* db;
+	int rc;
+
+	vector<vector<string>> result;
+
+	dbLock.lock();
+	rc = sqlite3_open("pool.db", &db);
+
+	if (rc == 0) {
+
+		sqlite3_stmt* stmt = NULL;
+		sqlite3_prepare_v2(db, sql.c_str() , -1, &stmt, NULL);
+
+		while (sqlite3_step(stmt) == SQLITE_ROW) {
+			vector<string> row;
+			for (int col = 0; col < sqlite3_column_count(stmt); col++)
+				row.push_back(string((char*)sqlite3_column_text(stmt, col)));
+			result.push_back(row);
+		}
+
 
 	}
 	else
