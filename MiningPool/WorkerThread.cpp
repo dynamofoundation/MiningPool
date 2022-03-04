@@ -118,6 +118,7 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
     previousDifficulty = global->settings->startDifficulty;
 	lastBlockHeightSent = -1;
     rejectCount = 0;
+    duplicateShareCount = 0;
 
 	thread blockUpdate(&WorkerThread::blockUpdateThread, this, clientSocket, global);
 	blockUpdate.detach();
@@ -246,6 +247,9 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
                     else {
                         sendBlockStatus(clientSocket, global->settings, "duplicate");
                         lockNonceList.unlock();
+                        duplicateShareCount++;
+                        if (duplicateShareCount > 50)
+                            return;
                     }
 
 				}

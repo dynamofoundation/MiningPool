@@ -46,6 +46,7 @@ class WorkerThread
 	unsigned char nativeTarget[32];
 
 	int submitShareCount;
+	int duplicateShareCount;
 
 	void sendDifficulty(int clientSocket);
 	void sendExtraNonce(int clientSocket);
