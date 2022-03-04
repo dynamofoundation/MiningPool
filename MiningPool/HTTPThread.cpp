@@ -152,7 +152,7 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         jResult["next_payout"] = strNextPayout;
 
 
-        vector<vector<string>> myShares = global->db->execSQL("select sum(share_difficulty) from share where share_processed = 0 and share_wallet = '" + wallet);
+        vector<vector<string>> myShares = global->db->execSQL("select sum(share_difficulty) from share where share_processed = 0 and share_wallet = '" + wallet + "'");
         int iMyShares = atoi(myShares[0][0].c_str());
         vector<vector<string>> totalShares = global->db->execSQL("select sum(share_difficulty) from share where share_processed = 0");
         int iTotalShares = atoi(totalShares[0][0].c_str());
