@@ -39,6 +39,11 @@ int main(int argc, char* argv[])
 
     Global* global = new Global(makeWebpack);
 
+    if (makeWebpack) {
+        printf("webpack.dat created\n");
+        exit(0);
+    }
+
     if (!global->db->databaseExists())
         global->db->createDatabase();
 

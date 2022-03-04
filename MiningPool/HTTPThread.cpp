@@ -43,6 +43,9 @@ void HTTPThread::clientWorker(int clientSocket, Global* global) {
 
         string URL = vTokens[1];
 
+        if (URL == "/")
+            URL = "/index.html";
+
         if (URL.substr(0, 4) == "/api")
             processAPICall(URL, clientSocket, global);
         else {
@@ -148,11 +151,19 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         string strNextPayout = to_string(nextPayoutMin) + "min " + to_string(nextPayoutSec) + " sec";
         jResult["next_payout"] = strNextPayout;
 
+
+        vector<vector<string>> myShares = global->db->execSQL("select sum(share_difficulty) from share where share_processed = 0 and share_wallet = '" + wallet);
+        int iMyShares = atoi(myShares[0][0].c_str());
+        vector<vector<string>> totalShares = global->db->execSQL("select sum(share_difficulty) from share where share_processed = 0");
+        int iTotalShares = atoi(totalShares[0][0].c_str());
+        int pctShares = (iMyShares * 100) / iTotalShares;
+        jResult["share_summary"] = "Your shares: " + to_string(iMyShares) + ", percent of pool: " + to_string(pctShares);
+
         vector<vector<string>> foundBlocks = global->db->execSQL("select block_submit_hash, block_submit_timestamp from block_submit order by block_submit_timestamp desc limit 30");
         string strFoundBlocks = "<table>";
         for (int row = 0; row < foundBlocks.size(); row++) {
             strFoundBlocks += "<tr>";
-            strFoundBlocks += "<td>" + foundBlocks[row][0] + "</td>";
+            strFoundBlocks += "<td style='color:#ffffff'>" + foundBlocks[row][0] + "</td>";
             time_t t = atoll(foundBlocks[row][1].c_str());
             struct tm* timeStamp = localtime(&t);
             char cTime[256];
@@ -167,8 +178,8 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         string strCurrentShares = "<table>";
         for (int row = 0; row < dbCurrentShares.size(); row++) {
             strCurrentShares += "<tr>";
-            strCurrentShares += "<td>" + dbCurrentShares[row][0] + "</td>";
-            strCurrentShares += "<td>" + dbCurrentShares[row][1] + "</td>";
+            strCurrentShares += "<td style='color:#ffffff'>" + dbCurrentShares[row][0] + "</td>";
+            strCurrentShares += "<td style='color:#ffffff'>" + dbCurrentShares[row][1] + "</td>";
             time_t t = atoll(dbCurrentShares[row][2].c_str());
             struct tm* timeStamp = localtime(&t);
             char cTime[256];
@@ -183,8 +194,8 @@ void HTTPThread::processAPICall(string URL, int clientSocket, Global* global) {
         string strPayouts = "<table>";
         for (int row = 0; row < dbPayouts.size(); row++) {
             strPayouts += "<tr>";
-            strPayouts += "<td>" + dbPayouts[row][0] + "</td>";
-            strPayouts += "<td>" + dbPayouts[row][1] + "</td>";
+            strPayouts += "<td style='color:#ffffff'>" + dbPayouts[row][0] + "</td>";
+            strPayouts += "<td style='color:#ffffff'>" + dbPayouts[row][1] + "</td>";
             time_t t = atoll(dbPayouts[row][2].c_str());
             struct tm* timeStamp = localtime(&t);
             char cTime[256];

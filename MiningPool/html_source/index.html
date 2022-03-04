@@ -25,7 +25,8 @@
 			},
 			dataType:'json',
 			success : function(data) {   
-				$("#divUnpaidBalance").html (data["unpaid_balance"]);
+                $("#divUnpaidBalance").html(data["unpaid_balance"]);
+                $("#divShareSummary").html(data["share_summary"]);
 				$("#divCurrentShares").html (data["current_shares"]);
 				$("#divNextPayout").html (data["next_payout"]);
 				$("#divFoundBlocks").html (data["found_blocks"]);
@@ -56,26 +57,28 @@ Enter your wallet address:<input type="text" id = "txtWallet">
     <li><a href="#tabRewards">Rewards</a></li>
   </ul>
   
-	<div id="tabStats">
-  
-		Unpaid balance:<div id="divUnpaidBalance"></div><br>
-	
-		Current shares:<br>
-		<div id="divCurrentShares"></div>
-		<br><br>
+  <div id="tabStats">
 
-		Next payout:<div id="divNextPayout"></div><br>
+  	Unpaid balance:<div id="divUnpaidBalance"></div><br>
+  	Share summary:<div id="divShareSummary"></div><br>
 
 
-		Server blocks:<br>
-		<div id="divFoundBlocks"></div>
-		<br><br>
+  	Current shares:<br>
+  	<div id="divCurrentShares"></div>
+  	<br><br>
 
-		Payout history:<br>
-		<div id="divPayouts"></div>
-		<br><br>
+  	Next payout:<div id="divNextPayout"></div><br>
 
-	</div>    
+
+  	Server blocks:<br>
+  	<div id="divFoundBlocks"></div>
+  	<br><br>
+
+  	Payout history:<br>
+  	<div id="divPayouts"></div>
+  	<br><br>
+
+  </div>    
 
 	<div id="tabPayouts">
 	</div>
