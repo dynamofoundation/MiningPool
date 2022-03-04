@@ -609,7 +609,10 @@ vector<vector<string>> Database::execSQL(string sql) {
 		while (sqlite3_step(stmt) == SQLITE_ROW) {
 			vector<string> row;
 			for (int col = 0; col < sqlite3_column_count(stmt); col++)
-				row.push_back(string((char*)sqlite3_column_text(stmt, col)));
+				if (sqlite3_column_text(stmt, col) != NULL)
+					row.push_back(string((char*)sqlite3_column_text(stmt, col)));
+				else
+					row.push_back("");
 			result.push_back(row);
 		}
 
