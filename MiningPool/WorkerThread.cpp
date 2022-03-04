@@ -181,6 +181,9 @@ void WorkerThread::clientWorker(int clientSocket, Global *global) {
 
                     //check that miner is sending coinbase to mining wallet
                     //if not, abort connection
+                    if (data.length() < 290)
+                        return;
+
                     unsigned char scriptVerify[256];
                     hex2bin(scriptVerify, data.substr(290, global->pk_script_size * 2).c_str(), global->pk_script_size);
                     if (memcmp(scriptVerify, global->pk_script, global->pk_script_size) != 0)

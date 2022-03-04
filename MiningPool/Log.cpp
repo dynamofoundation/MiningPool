@@ -9,6 +9,7 @@ void Log::fatalError(const char* message) {
 
 
 void Log::log(const char* format, ...) {
+	return;
 	va_list args;
 	va_start(args, format);
 	vprintf( format, args);
