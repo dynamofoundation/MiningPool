@@ -40,12 +40,44 @@ void WorkerThread::blockUpdateThread(int clientSocket, Global* global) {
             time(&now);
             if (now - lastDiffCheck >= 30) {
                 lastDiffCheck = now;
-                if (submitShareCount > 2) {
+                if (submitShareCount >= 150) {
                     previousDifficulty = difficulty;
-                    difficulty *= 2;
+                    difficulty *= 8;
                     sendDifficulty(clientSocket);
                 }
-                if (submitShareCount == 0) {
+                else if (submitShareCount >= 60 && submitShareCount < 150) {
+                    previousDifficulty = difficulty;
+                    difficulty *= 4;
+                    sendDifficulty(clientSocket);
+                }
+                else if (submitShareCount >= 30 && submitShareCount < 60) {
+                    previousDifficulty = difficulty;
+                    difficulty = (difficulty * 7) / 4;
+                    sendDifficulty(clientSocket);
+                }
+                else if (submitShareCount >= 10 && submitShareCount < 30) {
+                    previousDifficulty = difficulty;
+                    difficulty = (difficulty * 5) / 4;
+                    sendDifficulty(clientSocket);
+                }
+                else if (submitShareCount >= 5 && submitShareCount < 10) {
+                    previousDifficulty = difficulty;
+                    difficulty = (difficulty * 11) / 10;
+                    sendDifficulty(clientSocket);
+                }
+                else if (submitShareCount >= 3 && submitShareCount < 5) {
+                    previousDifficulty = difficulty;
+                    difficulty = (difficulty * 21) / 20;
+                    sendDifficulty(clientSocket);
+                }
+                if (submitShareCount > 0 && submitShareCount <= 1) {
+                    previousDifficulty = difficulty;
+                    difficulty = (difficulty * 9) / 10;
+                    if (difficulty < 1)
+                        difficulty = 1;
+                    sendDifficulty(clientSocket);
+                }
+                else if (submitShareCount == 0) {
                     previousDifficulty = difficulty;
                     difficulty = (difficulty * 3) / 4;
                     if (difficulty < 1)
