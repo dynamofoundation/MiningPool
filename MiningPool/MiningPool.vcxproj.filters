@@ -63,6 +63,9 @@
     <ClCompile Include="WebPack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Share.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SocketServer.h">
@@ -114,6 +117,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WebPack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Share.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

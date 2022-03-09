@@ -9,7 +9,7 @@
 #include "sqlite3.h"
 
 #include "Log.h"
-
+#include "Share.h"
 
 using namespace std;
 
@@ -48,5 +48,8 @@ public:
 	void runMaintenance();
 
 	vector<vector<string>> execSQL(string sql);
+
+	mutex shareLock;
+	vector<Share*> share;
 };
 

@@ -191,6 +191,20 @@ bool Database::indexExists(string idxName, sqlite3* db) {
 
 void Database::addShare(string wallet, string hash, int difficulty) {
 
+	time_t now;
+	time(&now);
+
+	Share* s = new Share();
+	s->share_wallet = wallet;
+	s->share_hash = hash;
+	s->share_difficulty = difficulty;
+	s->share_timestamp = now;
+	shareLock.lock();
+	share.push_back(s);
+	shareLock.unlock();
+
+
+	/*
 	dbLock.lock();
 
 	sqlite3* db;
@@ -225,12 +239,42 @@ void Database::addShare(string wallet, string hash, int difficulty) {
 	sqlite3_close(db);
 
 	dbLock.unlock();
+	*/
 
 }
 
 
 vector<sShareSummary> Database::countShares(time_t cutoffTime) {
 
+
+	vector<sShareSummary> result;
+
+	shareLock.lock();
+
+	for (int i = 0; i < share.size(); i++) {
+		if (share[i]->share_timestamp < cutoffTime) {
+			string wallet = share[i]->share_wallet;
+			bool found = false;
+			int j = 0;
+			while ((!found) && (j < result.size()))
+				if (result[j].wallet == wallet)
+					found = true;
+				else
+					j++;
+			if (found)
+				result[j].shareCount += share[i]->share_difficulty;
+			else {
+				sShareSummary newShare;
+				newShare.wallet = share[i]->share_wallet;
+				newShare.shareCount = share[i]->share_difficulty;
+				result.push_back(newShare);
+			}
+		}
+	}
+	
+	shareLock.unlock();
+
+	/*
 	dbLock.lock();
 		
 	sqlite3* db;
@@ -268,12 +312,30 @@ vector<sShareSummary> Database::countShares(time_t cutoffTime) {
 
 	dbLock.unlock();
 
+	*/
+
 	return result;
 
 }
 
 
 void Database::updateSharesProcessed(time_t cutoffTime) {
+
+	vector<Share*> newShare;
+
+	shareLock.lock();
+
+	for (int i = 0; i < share.size(); i++) {
+		if (share[i]->share_timestamp < cutoffTime)
+			delete share[i];
+		else
+			newShare.push_back(share[i]);
+	}
+	share = newShare;
+
+	shareLock.unlock();
+
+	/*
 	sqlite3* db;
 	int rc;
 
@@ -303,7 +365,7 @@ void Database::updateSharesProcessed(time_t cutoffTime) {
 
 	sqlite3_close(db);
 	dbLock.unlock();
-	
+	*/
 }
 
 void Database::savePayout(string address, uint64_t amount, string txid) {
@@ -630,6 +692,7 @@ vector<vector<string>> Database::execSQL(string sql) {
 
 void Database::runMaintenance() {
 
+	/*
 	dbLock.lock();
 
 	sqlite3* db;
@@ -657,5 +720,6 @@ void Database::runMaintenance() {
 	sqlite3_close(db);
 
 	dbLock.unlock();
+	*/
 
 }

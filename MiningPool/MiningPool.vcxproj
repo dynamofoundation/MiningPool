@@ -151,6 +151,7 @@
     <ClCompile Include="RPC.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="sha256.cpp" />
+    <ClCompile Include="Share.cpp" />
     <ClCompile Include="SocketServer.cpp" />
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="MiningPool.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="RPC.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="sha256.h" />
+    <ClInclude Include="Share.h" />
     <ClInclude Include="SocketServer.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="struct.h" />
