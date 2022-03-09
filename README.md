@@ -7,7 +7,7 @@ To compile for windows, open in VS2019 and build.  You will need curl and sqlite
 To compile for linux:
 
 ```
-apt-get install libsqlite3-dev
+apt-get install libsqlite3-dev build-essential libcurl4-openssl-dev
 
 g++-11 -I. -std=gnu++11 -fpermissive *.cpp -lcurl -lsqlite3 -lpthread -o MiningPool
 ```
