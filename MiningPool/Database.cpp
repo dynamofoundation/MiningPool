@@ -626,3 +626,36 @@ vector<vector<string>> Database::execSQL(string sql) {
 
 	return result;
 }
+
+
+void Database::runMaintenance() {
+
+	dbLock.lock();
+
+	sqlite3* db;
+	int rc;
+	char* errorMsg;
+
+
+	rc = sqlite3_open("pool.db", &db);
+
+	if (rc == 0) {
+		time_t now;
+		time(&now);
+
+
+		string sql = "delete from share where share_processed <> 0 and share_processed < " + to_string(now - (60 * 60 * 12));
+
+		if (sqlite3_exec(db, sql.c_str(), NULL, 0, &errorMsg) != SQLITE_OK)
+			Log::fatalError(errorMsg);
+
+
+	}
+	else
+		Log::fatalError(sqlite3_errmsg(db));
+
+	sqlite3_close(db);
+
+	dbLock.unlock();
+
+}

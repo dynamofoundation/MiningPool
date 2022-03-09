@@ -79,7 +79,19 @@ int main(int argc, char* argv[])
     httpThread.detach();
 
 
+    time_t lastDBMaint;
+    time(&lastDBMaint);
+
     while (true) {
+
+        time_t now;
+        time(&now);
+        //run DB maintenance once an hour
+        if (now - lastDBMaint > 60 * 60) {
+            lastDBMaint = now;
+            global->db->runMaintenance();
+        }
+
         this_thread::sleep_for(std::chrono::seconds(1));
     }
 
